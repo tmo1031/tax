@@ -1,0 +1,19 @@
+{
+  "name": "tax-calculator",
+  "version": "1.0.0",
+  "description": "A japanese tax calculator project",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "test": "jest"
+  },
+  "dependencies": {
+  },
+  "devDependencies": {
+  },
+  "author": "TMO1031",
+  "license": "ISC"
+}
