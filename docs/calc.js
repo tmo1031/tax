@@ -393,7 +393,8 @@ export function getCasualtyLoss(taxYear, Loss) {
     return { incomeTax: 0, residentTax: 0 };
 }
 
-export function getMedialDeduction(taxYear, Expenses, taxable) { //セルフメディケーション税制（医療費控除の特例）は無視する
+export function getMedialDeduction(taxYear, Expenses, taxable) { //
+    //セルフメディケーション税制（医療費控除の特例）は無視する
     const threshold = taxable < 2000000 ? taxable * 0.05 : 100000;
     const deduction = Expenses - threshold;
     return { incomeTax: deduction, residentTax: deduction };
@@ -543,11 +544,170 @@ export function getDividendCredit(taxYear) {// 配当控除の計算が難しい
     return { incomeTax: 0, residentTax: 0 };
 }
 
-export function getLoansCredit(taxYear, Loans, taxable, IncomeTaxPre) {
-    if (taxable > 30000000) return { incomeTax: 0, residentTax: 0 };
-    const incomeTax = (Loans < IncomeTaxPre) ? Loans : IncomeTaxPre;
-    const residentTax = Math.max(Loans - IncomeTaxPre, 0);
-    return { incomeTax: incomeTax, residentTax: residentTax };
+export function getLoansCreditPre(estate, taxable) {
+    //参考情報
+    //https://www.nta.go.jp/taxes/shiraberu/taxanswer/code/bunya-tochi-tatemono.htm
+    //https://www.nta.go.jp/law/joho-zeikaishaku/shotoku/shinkoku/shinkoku.htm
+    // 少なくとも平成20年度の設例で、取得と増改築を併用可能と確認済み
+    // 住宅取得等資金の贈与の特例は無視する
+    // 既存住宅(中古)の取得は後で追加する
+    const MoveInYear = estate.house.year;
+    const MoveInMonth = estate.house.month;
+    const houseAge = estate.house.age;
+    const renovationAge = estate.renovation.age;
+    const balance = estate.loan.balance
+    const QualityLevel = estate.case.Quality; //長期優良住宅=4, それ以外=0
+    const SalesTax = estate.case.SalesTax; //消費税増税対策
+    const SpH19Flag = estate.case.SpH19; //税源移譲で所得税が減るため対策として創設された特例選択
+    const SpR1Flag = estate.case.SpR1; //令和1年度税制改正の特別特例取得の判定
+    const SpR3Flag = estate.case.SpR3; //令和3年度税制改正の特例特別特例取得の判定
+    const ParentingFlag = estate.case.Parenting; //令和5年度税制での子育て世帯支援特例
+    const SpR6Flag = estate.case.SpR6; //令和6年度税制改正での一般住宅への救済措置
+    const SpCovid19Flag = estate.case.Covid19; //新型コロナウイルス感染症の影響による特例措置
+    const housePrice = estate.house.price;
+    const LoanTable = (MoveInYear < 1999) ? [
+        { age: null, max: null, rate: null, incomeLimit: null},
+    ] : (MoveInYear < 2001 || (MoveInYear === 2001 && MoveInMonth <7 )) ? [ //平成11年から平成13年前半の住宅ローン控除
+        { age: 6, max: 50000000, rate: 0.01, incomeLimit: 30000000, floor: 50},
+        { age: 11, max: 50000000, rate: 0.0075, incomeLimit: 30000000, floor: 50},
+        { age: 15, max: 50000000, rate: 0.005, incomeLimit: 30000000, floor: 50},
+    ] : (MoveInYear <= 2004) ? [ //平成13年後半から平成16年の住宅ローン控除
+        { age: 10, max: 50000000, rate: 0.01, incomeLimit: 30000000, floor: 50},
+    ] : (MoveInYear === 2005) ? [ //平成17年の住宅ローン控除
+        { age: 8, max: 40000000, rate: 0.01, incomeLimit: 30000000, floor: 50},
+        { age: 10, max: 40000000, rate: 0.005, incomeLimit: 30000000, floor: 50},
+    ] : (MoveInYear === 2006) ? [ //平成18年の住宅ローン控除
+        { age: 7, max: 30000000, rate: 0.01, incomeLimit: 30000000, floor: 50},
+        { age: 10, max: 30000000, rate: 0.005, incomeLimit: 30000000, floor: 50},
+    ] : (MoveInYear === 2007 && SpH19Flag === false) ? [ //平成19年の住宅ローン控除、特例適用なし
+        { age: 6, max: 25000000, rate: 0.01, incomeLimit: 30000000, floor: 50},
+        { age: 10, max: 25000000, rate: 0.005, incomeLimit: 30000000, floor: 50},
+    ] : (MoveInYear === 2007 && SpH19Flag === true) ? [ //平成19年の住宅ローン控除、特例選択あり
+        { age: 10, max: 25000000, rate: 0.006, incomeLimit: 30000000, floor: 50},
+        { age: 15, max: 25000000, rate: 0.004, incomeLimit: 30000000, floor: 50},
+    ] : (MoveInYear === 2008 && SpH19Flag === false) ? [ //平成20年の住宅ローン控除、特例適用なし
+        { age: 6, max: 20000000, rate: 0.01, incomeLimit: 30000000, floor: 50},
+        { age: 10, max: 20000000, rate: 0.005, incomeLimit: 30000000, floor: 50},
+    ] : (MoveInYear === 2008 && SpH19Flag === true) ? [ //平成20年の住宅ローン控除、特例選択あり
+        { age: 10, max: 20000000, rate: 0.006, incomeLimit: 30000000, floor: 50},
+        { age: 15, max: 20000000, rate: 0.004, incomeLimit: 30000000, floor: 50},
+    ] : ((MoveInYear === 2009 || MoveInYear === 2010) && QualityLevel === 0) ? [ //平成21,22年の住宅ローン控除、特例適用なし
+        { age: 10, max: 50000000, rate: 0.01, incomeLimit: 30000000, floor: 50},
+    ] : ((MoveInYear === 2009 || MoveInYear === 2010 || MoveInYear === 2011) && QualityLevel === 4) ? [ //平成21,22,23年の住宅ローン控除、長期優良住宅
+        { age: 10, max: 50000000, rate: 0.012, incomeLimit: 30000000, floor: 50},
+    ] : (MoveInYear === 2011 && QualityLevel === 0) ? [ //平成23年の住宅ローン控除、一般住宅
+        { age: 10, max: 40000000, rate: 0.01, incomeLimit: 30000000, floor: 50},
+    ] : (MoveInYear === 2012 && QualityLevel === 0) ? [ //平成24年の住宅ローン控除、一般住宅
+        { age: 10, max: 30000000, rate: 0.01, incomeLimit: 30000000, floor: 50},
+    ] : (MoveInYear === 2012 && QualityLevel === 4) ? [ //平成24年の住宅ローン控除、長期優良住宅
+        { age: 10, max: 40000000, rate: 0.01, incomeLimit: 30000000, floor: 50},
+    ] : ((MoveInYear === 2013 || (MoveInYear === 2014 && MoveInMonth <4) || SalesTax === 5)&& QualityLevel === 0) ? [ //平成25年の住宅ローン控除、一般住宅
+        { age: 10, max: 20000000, rate: 0.01, incomeLimit: 30000000, floor: 50},
+    ] : ((MoveInYear === 2013 || (MoveInYear === 2014 && MoveInMonth <4) || SalesTax === 5)&& QualityLevel === 4) ? [ //平成25年の住宅ローン控除、長期優良住宅
+        { age: 10, max: 30000000, rate: 0.01, incomeLimit: 30000000, floor: 50},
+    ] : (((MoveInYear === 2014 && MoveInMonth >=4)|| (MoveInYear <= 2018) || (MoveInYear === 2019 && MoveInMonth < 10))&& SalesTax > 5 && QualityLevel === 0) ? [ //消費税8%の住宅ローン控除、特例適用なし
+        { age: 10, max: 40000000, rate: 0.01, incomeLimit: 30000000, floor: 50},
+    ] : (((MoveInYear === 2014 && MoveInMonth >=4)|| (MoveInYear <= 2018) || (MoveInYear === 2019 && MoveInMonth < 10))&& SalesTax > 5 && QualityLevel === 4) ? [ //消費税8%の住宅ローン控除、長期優良住宅
+        { age: 10, max: 50000000, rate: 0.01, incomeLimit: 30000000, floor: 50},
+    ] : ((((MoveInYear === 2019 && MoveInMonth >=10)|| (MoveInYear <= 2020))&& SpR1Flag === true || SpCovid19Flag === true)&& QualityLevel === 0) ? [ //消費税10%に増税した際に一時的な特例あり、一般住宅
+        { age: 10, max: 40000000, rate: 0.01, incomeLimit: 30000000, floor: 50},
+        { age: 13, max: Math.min(housePrice, 40000000)*0.02/3, rate: 0.01, incomeLimit: 30000000, floor: 50},
+    ] : ((((MoveInYear === 2019 && MoveInMonth >=10)|| (MoveInYear <= 2020))&& SpR1Flag === true || SpCovid19Flag === true)&& QualityLevel === 4) ? [ //消費税10%に増税した際に一時的な特例あり、長期優良住宅
+        { age: 10, max: 50000000, rate: 0.01, incomeLimit: 30000000, floor: 50},
+        { age: 13, max: Math.min(housePrice, 50000000)*0.02/3, rate: 0.01, incomeLimit: 30000000, floor: 50},
+    ] : ((MoveInYear === 2021 || MoveInYear === 2022 )&& SpR3Flag === true && QualityLevel === 0) ? [ //コロナ対策で一時的な特例あり、一般住宅
+        { age: 10, max: 40000000, rate: 0.01, incomeLimit: 30000000, floor: 50},
+        { age: 13, max: Math.min(housePrice, 40000000)*0.02/3, rate: 0.01, incomeLimit: 30000000, floor: 50},
+        { age: 10, max: 40000000, rate: 0.01, incomeLimit: 10000000, floor: 40},
+        { age: 13, max: Math.min(housePrice, 40000000)*0.02/3, rate: 0.01, incomeLimit: 10000000, floor: 40},
+    ] : ((MoveInYear === 2021 || MoveInYear === 2022 )&& SpR3Flag === true && QualityLevel === 4) ? [ //消費税10%に増税した際に一時的な特例あり、長期優良住宅
+        { age: 10, max: 50000000, rate: 0.01, incomeLimit: 30000000, floor: 50},
+        { age: 13, max: Math.min(housePrice, 50000000)*0.02/3, rate: 0.01, incomeLimit: 30000000, floor: 50},
+        { age: 10, max: 50000000, rate: 0.01, incomeLimit: 10000000, floor: 40},
+        { age: 13, max: Math.min(housePrice, 50000000)*0.02/3, rate: 0.01, incomeLimit: 10000000, floor: 40},
+    ] : (((MoveInYear === 2019 && MoveInMonth >=10)|| (MoveInYear <= 2021))&& SalesTax > 5 && QualityLevel === 0) ? [ //消費税8%(または10%)の住宅ローン控除、一般住宅
+        { age: 10, max: 40000000, rate: 0.01, incomeLimit: 30000000, floor: 50},
+    ] : (((MoveInYear === 2019 && MoveInMonth >=10)|| (MoveInYear <= 2021))&& SalesTax > 5 && QualityLevel === 4) ? [ //消費税8%(または10%)の住宅ローン控除、長期優良住宅
+        { age: 10, max: 50000000, rate: 0.01, incomeLimit: 30000000, floor: 50},
+    ] : ((MoveInYear === 2022 || MoveInYear === 2023) && QualityLevel === 0) ? [ //令和4年以降の住宅ローン控除、一般住宅
+        { age: 13, max: 30000000, rate: 0.007, incomeLimit: 20000000, floor: 50},
+    ] : ((MoveInYear === 2022 || MoveInYear === 2023 || (MoveInYear === 2024 && ParentingFlag === true)) && QualityLevel === 1) ? [ //令和4年以降の住宅ローン控除、省エネ基準適合住宅
+        { age: 13, max: 40000000, rate: 0.007, incomeLimit: 20000000, floor: 50},
+    ] : ((MoveInYear === 2022 || MoveInYear === 2023 || (MoveInYear === 2024 && ParentingFlag === true)) && QualityLevel === 2) ? [ //令和4年以降の住宅ローン控除、ZEH水準省エネ住宅
+        { age: 13, max: 45000000, rate: 0.007, incomeLimit: 20000000, floor: 50},
+    ] : ((MoveInYear === 2022 || MoveInYear === 2023 || (MoveInYear === 2024 && ParentingFlag === true)) && QualityLevel >= 3) ? [ //令和4年以降の住宅ローン控除、認定低炭素住宅
+        { age: 13, max: 50000000, rate: 0.007, incomeLimit: 20000000, floor: 50},
+    ] : ((MoveInYear === 2024 || MoveInYear === 2025) && QualityLevel === 0 && SpR6Flag === true) ? [ //令和6年以降の住宅ローン控除 一般住宅 救済措置あり
+        { age: 10, max: 20000000, rate: 0.007, incomeLimit: 20000000, floor: 50},
+    ] : ((MoveInYear === 2024 || MoveInYear === 2025) && QualityLevel === 0 && SpR6Flag === false) ? [ //令和6年以降の住宅ローン控除 一般住宅 
+        { age: 13, max: 0, rate: 0.007, incomeLimit: 20000000, floor: 50},
+    ] : ((MoveInYear === 2024 || MoveInYear === 2025) && QualityLevel === 1) ? [ //令和6年以降の住宅ローン控除 省エネ基準適合住宅
+        { age: 13, max: 30000000, rate: 0.007, incomeLimit: 20000000, floor: 50},
+    ] : ((MoveInYear === 2024 || MoveInYear === 2025) && QualityLevel === 2) ? [ //令和6年以降の住宅ローン控除 ZEH水準省エネ住宅
+        { age: 13, max: 35000000, rate: 0.007, incomeLimit: 20000000, floor: 50},
+    ] : ((MoveInYear === 2024 || MoveInYear === 2025) && QualityLevel >= 3) ? [ //令和6年以降の住宅ローン控除 認定低炭素住宅
+        { age: 13, max: 45000000, rate: 0.007, incomeLimit: 20000000, floor: 50},
+    ] : [ //令和8年以降は未定
+        { age: null, max: null, rate: null, incomeLimit: null},
+    ];
+    const RenovationTable = (MoveInYear < 2007) ? [
+        { age: null, max: null, rate: null, incomeLimit: null},
+    ] : (MoveInYear <= 2013 || (MoveInYear === 2014 && MoveInMonth <4)|| SalesTax === 5) ? [ //平成19年以降の住宅ローン控除、特定増改築選択あり
+        { age: 5, max: 10000000, rate: 0.01, maxSp: 2000000, rateSp: 0.02, incomeLimit: 30000000, floor: 50},
+    ] : (((MoveInYear === 2014 && MoveInMonth >=4)|| (MoveInYear <= 2021)) && SalesTax > 5) ? [ //消費税増税後の住宅ローン控除、特定増改築選択あり
+        { age: 5, max: 10000000, rate: 0.01, maxSp: 2500000, rateSp: 0.02, incomeLimit: 30000000, floor: 50},
+    ] : (MoveInYear <= 2025) ? [ //令和4年以降
+        { age: 10, max: 20000000, rate: 0.007, incomeLimit: 20000000, floor: 50},
+    ] : [ //令和8年以降は未定
+        { age: null, max: null, rate: null, incomeLimit: null},
+    ];
+    //https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1216.htm
+    //https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1217.htm
+    //https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1218.htm
+    //https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1223.htm
+    //https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1211-4.htm
+
+    console.log('LoanTable:', LoanTable);
+    for (const entry of LoanTable) {
+        if (taxable > entry.incomeLimit) {
+            return 0;
+        } else if (houseAge <= entry.age) {
+            return Math.min(balance * entry.rate, entry.max);
+        }
+    }
+    return 0;
+}
+
+export function getLoansCredit(taxYear, estate, taxable, loanCredit, IncomeTaxPre, IncomeTaxOld) {
+    //住宅ローン控除
+    //市区町村への控除申告をする場合の処理用にIncomeTaxOldを追加
+    const paymentYear = taxYear +1;
+    const MoveInYear = estate.house.year;
+    const MoveInMonth = estate.house.month;
+    const transitional = estate.case.ApplyResidentTax;
+    const SalesTax = estate.case.SalesTax; //消費税増税対策
+    const incomeTax = Math.min(loanCredit, IncomeTaxPre);
+    const residentTaxTable = (MoveInYear < 1999) ? 
+        { rate: 0, max: 0}
+    : ( MoveInYear === 2007 || MoveInYear === 2008 ) ?
+        { rate: 0, max: 0}
+    : (((MoveInYear === 2014 && MoveInMonth >=4) || (MoveInYear >= 2015 && MoveInYear === 2021)) && SalesTax > 5) ?
+        { rate: 0.07, max: 136500}
+    : //通常の住民税住宅ローン控除
+        { rate: 0.05, max: 97500};
+
+    if (paymentYear < 2008) {
+        return { incomeTax: incomeTax, residentTax: 0 };
+    } else if(transitional === true && (paymentYear >= 2008 && paymentYear <= 2016)) { //平成20年度から28年度
+        const adjustedCredit = Math.min(loanCredit, IncomeTaxOld);
+        const residentTaxMax = Math.min(taxable * residentTaxTable.rate, residentTaxTable.max);
+        const residentTax = Math.max(Math.min(adjustedCredit - IncomeTaxPre, residentTaxMax), 0);
+        return { incomeTax: incomeTax, residentTax: residentTax };
+    } else {
+        const residentTaxMax = Math.min(taxable * residentTaxTable.rate, residentTaxTable.max);
+        const residentTax = Math.max(Math.min(loanCredit - IncomeTaxPre, residentTaxMax), 0);
+        return { incomeTax: incomeTax, residentTax: residentTax };
+    }
 }
 
 export function getDonationCredit(taxYear, Donations) {

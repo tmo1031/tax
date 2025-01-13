@@ -97,3 +97,53 @@ export const testCasesSpouse = [
     //{ year: 2003, hasSpouse: 1, applicantTotal:10100000, spouseTotal: 0, spouseAge: 69, expected: { incomeTax: 76000, residentTax: 76000 } },// エラー吐く用のテストケース
     { year: 2003, hasSpouse: 1, applicantTotal:10100000, spouseTotal: 0, spouseAge: 69, expected: { incomeTax: 760000, residentTax: 660000 } },
 ];
+
+export const testCasesLoan = [
+    { estate: {
+        house: {year:2001, month: 1, age:8,
+            price: 20000000, price_Sp: null,
+            resident: 100, debt: 100,},
+        land: {year:2001, month: 1, age:8,
+            price: 20000000, price_Sp: null,
+            resident: 100, debt: 100,},
+        renovation: {year:null, month: null, age:null,
+            price: null, price_Sp: null,
+            resident: null, debt: null,},
+        case: {
+            Quality: 0, //長期優良住宅=4, 認定低炭素住宅=3, ZEH水準省エネ住宅=2, 省エネ基準適合住宅=1, 一般住宅=0
+            SalesTax: 0, //消費税増税対策
+            SpH19: false, //税源移譲で所得税が減るため対策として創設された特例選択
+            SpR1: false, //令和1年度税制改正の特別特例取得の判定
+            SpR3: false, //令和3年度税制改正の特例特別特例取得の判定
+            Parenting: false, //令和5年度税制での子育て世帯支援特例
+            SpR6: false, //令和6年度税制改正での一般住宅への救済措置
+            Covid19: false, //新型コロナウイルス感染症の影響による特例措置
+        }},
+    Loans: {balance: 10000000},
+    taxable: 8000000,
+    expected: 75000 },
+    { estate: {
+        house: {year:2020, month: 1, age:3,
+            price: 20000000, price_Sp: null,
+            resident: 100, debt: 100,},
+        land: {year:2020, month: 1, age:3,
+            price: 20000000, price_Sp: null,
+            resident: 100, debt: 100,},
+        renovation: {year:null, month: null, age:null,
+            price: null, price_Sp: null,
+            resident: null, debt: null,},
+        case: {
+            Quality: 0, //長期優良住宅=4, 認定低炭素住宅=3, ZEH水準省エネ住宅=2, 省エネ基準適合住宅=1, 一般住宅=0
+            SalesTax: 10, //消費税増税対策
+            SpH19: null, //税源移譲で所得税が減るため対策として創設された特例選択
+            SpR1: true, //令和1年度税制改正の特別特例取得の判定
+            SpR3: null, //令和3年度税制改正の特例特別特例取得の判定
+            Parenting: null, //令和5年度税制での子育て世帯支援特例
+            SpR6: null, //令和6年度税制改正での一般住宅への救済措置
+            Covid19: null, //新型コロナウイルス感染症の影響による特例措置
+        }},
+    Loans: {balance: 36000000},
+    taxable: 8000000,
+    expected: 360000 },
+
+];
