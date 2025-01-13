@@ -111,6 +111,12 @@
         width: 6ch;
     }
 
+    .month {
+        font-weight   : bold;
+        font-size: 15px;
+        width: 4ch;
+    }
+
     .yearTitle {
         font-weight   : bold;
         font-size: 21px;
@@ -235,6 +241,8 @@
                 <label>⚫︎住宅</label>
                 <label>入居年</label>
                 <input id="MoveInYear" type="number" class="year" value="2000" min="1999" max="2100" step="1">
+                <input id="MoveInMonth" type="number" class="month" value="1" min="1" max="12" step="1">
+                <label>月</label>
                 <BR>
                 <table id="HouseTable">
                     <thead id="HouseHead">
@@ -262,33 +270,76 @@
                 </table>
                 <BR>
                 </div>
-                <div class="visible" id="Reform">
+                <div class="visible" id="Renovation">
                     <label>⚫︎増改築</label>
                     <label>入居年</label>
-                    <input id="ReformYear" type="number" class="year" value="2000" min="1999" max="2100" step="1">
+                    <input id="RenovationYear" type="number" class="year" value="2000" min="1999" max="2100" step="1">
+                    <input id="RenovationMonth" type="number" class="month" value="1" min="1" max="12" step="1">
+                    <label>月</label>
                     <BR>
-                    <table id="ReformTable">
-                    <thead id="ReformHead">
-                        <tr>
-                            <th class="name"></th>
-                            <th class="currency">増改築費用</th>
-                            <th class="currency">特定増改築</th>
-                            <th class="percent">居住割合</th>
-                            <th class="percent">連帯債務割合</th>
-                        </tr>
-                    </thead>
-                    <tbody id="ReformBody">
-                        <tr>
-                            <td>増改築</td>
-                            <td><input id="reform_Price" type="text" class="just-number currency-input" value="0"></td>
-                            <td><input id="reformSpe_Price" type="text" class="just-number currency-input" value="0"></td>
-                            <td><input id="house_Resident" type="number" class="percent" value="100"></td>
-                            <td><input id="house_Debt" type="number" class="percent" value="100"></td>
-                        </tr>
-                    </tbody>
-                </table>
-                <BR>
-            </div>
+                    <table id="RenovationTable">
+                        <thead id="RenovationHead">
+                            <tr>
+                                <th class="name"></th>
+                                <th class="currency">増改築費用</th>
+                                <th class="currency">特定増改築</th>
+                                <th class="percent">居住割合</th>
+                                <th class="percent">連帯債務割合</th>
+                            </tr>
+                        </thead>
+                        <tbody id="RenovationBody">
+                            <tr>
+                                <td>増改築</td>
+                                <td><input id="Renovation_Price" type="text" class="just-number currency-input" value="0"></td>
+                                <td><input id="RenovationSp_Price" type="text" class="just-number currency-input" value="0"></td>
+                                <td><input id="Renovation_Resident" type="number" class="percent" value="100"></td>
+                                <td><input id="Renovation_Debt" type="number" class="percent" value="100"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <BR>
+                </div>
+                <div class="visible" id="Loan">
+                    <label>⚫︎住宅借入金</label>
+                    <table id="LoanTable">
+                        <thead id="LoanHead">
+                            <tr>
+                                <th class="currency">年末残高</th>
+                            </tr>
+                        </thead>
+                        <tbody id="LoanBody">
+                            <tr>
+                                <td><input id="LoanBalance" type="text" class="just-number currency-input" value="0"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <BR>
+                    <BR>
+                    <select id="Quality">
+                        <option value=null>認定住宅等</option>
+                        <option value=0>一般住宅</option>
+                        <option value=1>省エネ基準適合住宅</option>
+                        <option value=2>ZEH水準省エネ住宅</option>
+                        <option value=3>認定低炭素住宅</option>
+                        <option value=4>認定長期優良住宅</option>
+                    </select>
+                    <select id="SalesTax">
+                        <option value=null>消費税率</option>
+                        <option value=5>5%</option>
+                        <option value=8>8%</option>
+                        <option value=10>10%</option>
+                    </select>
+                    <label><input id="ApplyResidentTax" type="checkbox">市区町村への控除申告をする(H11-18入居)</label>
+                    <label><input id="SpH19" type="checkbox">特例適用(H19,20)</label>
+                    <label><input id="SpR1" type="checkbox">特別特定取得(R1,2)</label>
+                    <label><input id="Covid19" type="checkbox">コロナによる入居遅れの救済(R2,3)</label>
+                    <label><input id="SpR3" type="checkbox">特別特例取得(R2,3)</label>
+                    <label><input id="Small" type="checkbox">小規模居住用家屋</label>
+                    <label><input id="Parenting" type="checkbox">子育て世帯(R6)</label>
+                    <label><input id="SpR6" type="checkbox">その他住宅の特例(R6)</label>
+                    
+                    <BR>
+                </div>
         </div>
         <div class="tab_content" id="business_content">
             <label>⚫収入の詳細</label>

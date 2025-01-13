@@ -16,6 +16,7 @@ import {
     getEInsuranceDeduction,
     getDonationDeduction,
     getDividendCredit,
+    getLoansCreditPre,
     getLoansCredit,
     getDonationCredit,
     getImprovementCredit,
@@ -61,10 +62,42 @@ const createDependent = () => ({
     Disability_O: null,
 });
 
+const createContract = () => ({
+    year: null,
+    month: null,
+    age: null,
+    price: null,
+    price_Sp: null,
+    resident: null,
+    debt: null,
+});
+
+const createCase = () => ({
+    Quality: null, //長期優良住宅=4, 認定低炭素住宅=3, ZEH水準省エネ住宅=2, 省エネ基準適合住宅=1, 一般住宅=0
+    SalesTax: null, //消費税増税対策
+    ApplyResidentTax: null, //平成11年から平成18年までに入居した住宅の特例を申請する場合
+    SpH19: null, //税源移譲で所得税が減るため対策として創設された特例選択
+    SpR1: null, //令和1年度税制改正の特別特定取得の判定
+    Covid19: null, //新型コロナウイルス感染症の影響による特例措置
+    SpR3: null, //令和3年度税制改正の特別特例取得の判定
+    Small: null, //小規模居住用家屋の判定
+    Parenting: null, //令和5年度税制での子育て世帯支援特例
+    SpR6: null, //令和6年度税制改正での一般住宅への救済措置
+});
+
+const createEstate = () => ({
+    house: createContract(),
+    land: createContract(),
+    renovation: createContract(),
+    loan: {balance: null},
+    case: createCase(),
+});
+
 const profile = {
     applicant: createProfile(),
     spouse: createProfile(),
     dependent: createDependent(),
+    estate: createEstate(),
 };
 
 const deductionInput = {
@@ -119,7 +152,7 @@ const tax = {
     income: { incomeTax: 0, residentTax: 0 },
     deduction: { incomeTax: 0, residentTax: 0 },
     taxable: { incomeTax: 0, residentTax: 0 },
-    taxPre: { incomeTax: 0, residentTax: 0, cityTax: 0, prefTax: 0},
+    taxPre: { incomeTax: 0, residentTax: 0, cityTax: 0, prefTax: 0, incomeTaxOld: 0,},
     taxCredit: { incomeTax: 0, residentTax: 0, cityTax: 0, prefTax: 0},
     taxVar: { incomeTax: 0, residentTax: 0, cityTax: 0, prefTax: 0},
     taxFixed: { incomeTax: 0, residentTax: 0, cityTax: 0, prefTax: 0, ecoTax: 0 },
@@ -186,13 +219,33 @@ function setupEventListeners() {
     const birthYearPInput = document.getElementById('birthYear_p');
     const incomeSalaryPInput = document.getElementById('income_salary_p');
     const otherTaxablePInput = document.getElementById('Taxable_other_p');
-    const houseCheckBox = document.getElementById('houseCheck');
+
+    const loanSelect = document.getElementById('LoanSelect');
+    const house_YearInput = document.getElementById('MoveInYear');
+    const house_MonthInput = document.getElementById('MoveInMonth');
     const house_PriceInput = document.getElementById('house_Price');
     const house_ResidentInput = document.getElementById('house_Resident');
     const house_DebtInput = document.getElementById('house_Debt');
     const land_PriceInput = document.getElementById('land_Price');
     const land_ResidentInput = document.getElementById('land_Resident');
     const land_DebtInput = document.getElementById('land_Debt');
+    const renovation_YearInput = document.getElementById('RenovationYear');
+    const renovation_MonthInput = document.getElementById('RenovationMonth');
+    const renovation_PriceInput = document.getElementById('Renovation_Price');
+    const renovation_PriceSpInput = document.getElementById('RenovationSp_Price');
+    const renovation_ResidentInput = document.getElementById('Renovation_Resident');
+    const renovation_DebtInput = document.getElementById('Renovation_Debt');
+    const loanBalanceInput = document.getElementById('LoanBalance');
+    const QualitySelect = document.getElementById('Quality');
+    const SalesTaxSelect = document.getElementById('SalesTax');
+    const ApplyResidentTaxCheck = document.getElementById('ApplyResidentTax');
+    const SpH19Check = document.getElementById('SpH19');
+    const SpR1Check = document.getElementById('SpR1');
+    const Covid19Check = document.getElementById('Covid19');
+    const SpR3Check = document.getElementById('SpR3');
+    const SmallCheck = document.getElementById('Small');
+    const ParentingCheck = document.getElementById('Parenting');
+    const SpR6Check = document.getElementById('SpR6');
 
     const dependent_SpecifiedInput = document.getElementById('dependent_Specified');
     const dependent_Elderly_LTInput = document.getElementById('dependent_Elderly_LT');
@@ -268,6 +321,34 @@ function setupEventListeners() {
         { element: single_PCheckbox, event: 'change', handler: () => refresh('byDependent') },
         { element: single_OCheckbox, event: 'change', handler: () => refresh('byDependent') },
         { element: studentCheckbox, event: 'change', handler: () => refresh('byDependent') },
+
+        { element: loanSelect, event: 'change', handler: () => refresh('byLoanSelect') },
+        { element: house_YearInput, event: 'input', handler: () => refresh('byYear') },
+        { element: house_MonthInput, event: 'input', handler: () => refresh('byYear') },
+        { element: house_PriceInput, event: 'input', handler: () => refresh('byDeductions') },
+        { element: house_ResidentInput, event: 'input', handler: () => refresh('byDeductions') },
+        { element: house_DebtInput, event: 'input', handler: () => refresh('byDeductions') },
+        { element: land_PriceInput, event: 'input', handler: () => refresh('byDeductions') },
+        { element: land_ResidentInput, event: 'input', handler: () => refresh('byDeductions') },
+        { element: land_DebtInput, event: 'input', handler: () => refresh('byDeductions') },
+        { element: renovation_YearInput, event: 'input', handler: () => refresh('byYear') },
+        { element: renovation_MonthInput, event: 'input', handler: () => refresh('byYear') },
+        { element: renovation_PriceInput, event: 'input', handler: () => refresh('byDeductions') },
+        { element: renovation_PriceSpInput, event: 'input', handler: () => refresh('byDeductions') },
+        { element: renovation_ResidentInput, event: 'input', handler: () => refresh('byDeductions') },
+        { element: renovation_DebtInput, event: 'input', handler: () => refresh('byDeductions') },
+        { element: loanBalanceInput, event: 'input', handler: () => refresh('byDeductions') },
+        { element: QualitySelect, event: 'change', handler: () => refresh('byDeductions') },
+        { element: SalesTaxSelect, event: 'change', handler: () => refresh('byDeductions') },
+        { element: ApplyResidentTaxCheck, event: 'change', handler: () => refresh('byDeductions') },
+        { element: SpH19Check, event: 'change', handler: () => refresh('byDeductions') },
+        { element: SpR1Check, event: 'change', handler: () => refresh('byDeductions') },
+        { element: Covid19Check, event: 'change', handler: () => refresh('byDeductions') },
+        { element: SpR3Check, event: 'change', handler: () => refresh('byDeductions') },
+        { element: SmallCheck, event: 'change', handler: () => refresh('byDeductions') },
+        { element: ParentingCheck, event: 'change', handler: () => refresh('byDeductions') },
+        { element: SpR6Check, event: 'change', handler: () => refresh('byDeductions') },
+
         { element: CasualtyLossInput, event: 'input', handler: () => refresh('byDeductions') },
         { element: DisasterReductionInput, event: 'input', handler: () => refresh('byDeductions') },
         { element: SocialInsuranceInput, event: 'input', handler: () => refresh('byDeductions') },
@@ -345,6 +426,9 @@ function refresh(mode) {
         if (mode === 'byDependent') {
             // 扶養家族の有無によって寡婦の有効化を切り替える
         }
+        if (mode === 'byLoanSelect') {
+            // ローンの有無で表示を切り替える
+        }
     }
 
     function updateAge (person, taxYear) {
@@ -361,6 +445,9 @@ function refresh(mode) {
         //console.log('taxYear:', taxYear);
         updateAge(profile.applicant, taxYear);
         updateAge(profile.spouse, taxYear);
+        updateAge(profile.estate.house, taxYear);
+        updateAge(profile.estate.land, taxYear);
+        updateAge(profile.estate.renovation, taxYear);
     }
 
     function getProfile () {
@@ -387,9 +474,41 @@ function refresh(mode) {
         profile.dependent.Disability_P = document.getElementById('dependent_Disability_P').value;
         profile.dependent.Disability_O = document.getElementById('dependent_Disability_O').value;
 
-        updateAge(profile.applicant);
-        updateAge(profile.spouse);
+        profile.estate.house.year = parseInt(document.getElementById('MoveInYear').value);
+        profile.estate.house.month = parseInt(document.getElementById('MoveInMonth').value);
+        profile.estate.house.price = currencyToNum(document.getElementById('house_Price').value);
+        profile.estate.house.resident = parseInt(document.getElementById('house_Resident').value);
+        profile.estate.house.debt = parseInt(document.getElementById('house_Debt').value);
+        profile.estate.land.year = profile.estate.house.year;
+        profile.estate.land.month = profile.estate.house.month;
+        profile.estate.land.price = currencyToNum(document.getElementById('land_Price').value);
+        profile.estate.land.resident = parseInt(document.getElementById('land_Resident').value);
+        profile.estate.land.debt = parseInt(document.getElementById('land_Debt').value);
+        profile.estate.renovation.year = parseInt(document.getElementById('RenovationYear').value);
+        profile.estate.renovation.month = parseInt(document.getElementById('RenovationMonth').value);
+        profile.estate.renovation.price = currencyToNum(document.getElementById('Renovation_Price').value);
+        profile.estate.renovation.price_Sp = currencyToNum(document.getElementById('RenovationSp_Price').value);
+        profile.estate.renovation.resident = parseInt(document.getElementById('Renovation_Resident').value);
+        profile.estate.renovation.debt = parseInt(document.getElementById('Renovation_Debt').value);
+        profile.estate.loan.balance = currencyToNum(document.getElementById('LoanBalance').value);
+        profile.estate.case.Quality = parseInt(document.getElementById('Quality').value);
+        profile.estate.case.SalesTax = parseInt(document.getElementById('SalesTax').value);
+        profile.estate.case.ApplyResidentTax = document.getElementById('ApplyResidentTax').checked ? true : false;
+        profile.estate.case.SpH19 = document.getElementById('SpH19').checked ? true : false;
+        profile.estate.case.SpR1 = document.getElementById('SpR1').checked ? true : false;
+        profile.estate.case.Covid19 = document.getElementById('Covid19').checked ? true : false;
+        profile.estate.case.SpR3 = document.getElementById('SpR3').checked ? true : false;
+        profile.estate.case.Small = document.getElementById('Small').checked ? true : false;
+        profile.estate.case.Parenting = document.getElementById('Parenting').checked ? true : false;
+        profile.estate.case.SpR6 = document.getElementById('SpR6').checked ? true : false;
+        
+        updateAge(profile.applicant, taxYear);
+        updateAge(profile.spouse, taxYear);
+        updateAge(profile.estate.house, taxYear);
+        updateAge(profile.estate.land, taxYear);
+        updateAge(profile.estate.renovation, taxYear);
 
+        console.log(profile);
     }
 
     function setProfile () {
@@ -542,6 +661,7 @@ function refresh(mode) {
         function calcTaxPre () {
             console.log('calcTaxPre');
             tax.taxPre.incomeTax = RoundBy(tax.taxable.incomeTax * taxSystem.rate.incomeTax,1);
+            tax.taxPre.incomeTaxOld = RoundBy(tax.taxable.residentTax * taxSystem.rate.residentTax,1); // 旧税率で計算した値 ここでは暫定
             tax.taxPre.cityTax = tax.taxable.residentTax * taxSystem.rate.cityTax;
             tax.taxPre.prefTax = tax.taxable.residentTax * taxSystem.rate.prefTax;
             tax.taxPre.residentTax = tax.taxPre.cityTax + tax.taxPre.prefTax;
@@ -549,13 +669,16 @@ function refresh(mode) {
 
         function getTaxCredits() {
             taxCredits.Dividend = getDividendCredit(taxYear);// 配当控除の計算が難しいので保留
-            taxCredits.Loans = getLoansCredit(taxYear, deductionInput.Housing.Loans, profile.applicant.taxable.total, tax.taxPre.incomeTax);
+            const loanCredit = getLoansCreditPre(profile.estate, profile.applicant.taxable.total);
+            taxCredits.Loans = getLoansCredit(taxYear, profile.estate, profile.applicant.taxable.total, loanCredit, tax.taxPre.incomeTax, tax.taxPre.incomeTaxOld);
+            // 住宅取得と増改築の併用は保留
             taxCredits.Donations = getDonationCredit(taxYear, deductionInput.Donations);
             taxCredits.ImprovementHouse = getImprovementCredit(taxYear, deductionInput.Housing.Improvement);
             taxCredits.DisasterReduction = getDisasterCredit(taxYear, deductionInput.Loss.DisasterReduction);
             taxCredits.ForeignTax = getForeignTaxCredit(taxYear, deductionInput.Other.ForeignTax);
             taxCredits.Withholding_Dividend = getDividendRefund(taxYear, deductionInput.Withholding.Dividend_J);
             taxCredits.Withholding_Stock = getStockRefund(taxYear, deductionInput.Withholding.Stock_J);
+            console.log('taxCredits:', taxCredits);
         }
 
         function calcTaxCredit () {
@@ -732,6 +855,17 @@ function refresh(mode) {
         bySpouseCheck: [
             getTaxYear,
             () => updateProfile('bySpouseCheck'),
+            getProfile,
+            setProfile,
+            getTaxable,
+            getDeductions,
+            calcDeductions,
+            calcTax,
+            showTax,
+        ],
+        byLoanSelect: [
+            getTaxYear,
+            () => updateProfile('byLoanSelect'),
             getProfile,
             setProfile,
             getTaxable,
