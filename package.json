@@ -8,24 +8,31 @@
   },
   "scripts": {
     "clean": "rimraf docs/js",
-   "build": "npx tsc",
+    "build": "npx tsc",
     "deploy": "git add . && git commit -m 'Deploy to GitHub Pages' && git push origin dev",
-   "start": "npm run clean && npm run build && npm run deploy"
+    "lint": "eslint .",
+    "prettier": "prettier . --write",
+    "start": "npm run clean && npm run build && npm run deploy"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/tmo1031/tax.git"
   },
   "keywords": [],
-  "author": "",
+  "author": "TMO1031",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/tmo1031/tax/issues"
   },
   "homepage": "https://tmo1031.github.io/tax/",
   "devDependencies": {
+    "@eslint/js": "^9.18.0",
+    "eslint": "^9.18.0",
+    "eslint-plugin-react": "^7.37.4",
     "gh-pages": "^6.3.0",
-    "typescript": "^4.9.5"
+    "globals": "^15.14.0",
+    "typescript": "^4.9.5",
+    "typescript-eslint": "^8.20.0"
   },
   "dependencies": {
     "concurrently": "^9.1.2",
