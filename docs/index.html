@@ -74,10 +74,10 @@
         overflow: hidden;
       }
 
-      #income:checked ~ #income_content,
-      #business:checked ~ #business_content,
-      #deductions:checked ~ #deductions_content,
-      #tax:checked ~ #tax_content {
+      #income:checked ~ #incomeContent,
+      #business:checked ~ #businessContent,
+      #deductions:checked ~ #deductionsContent,
+      #tax:checked ~ #taxContent {
         display: block;
       }
 
@@ -138,8 +138,8 @@
 
   <body>
     <h2>
-      <input id="TaxYear" type="number" class="yearTitle" value="2024" min="2000" max="2100" step="1" />
-      (<label id="JapaneseYear"></label>) 年分の税額申告
+      <input id="taxYear" type="number" class="yearTitle" value="2024" min="2000" max="2100" step="1" />
+      (<label id="japaneseYear"></label>) 年分の税額申告
     </h2>
     <div class="tabs">
       <input id="income" type="radio" name="tab_item" checked />
@@ -152,7 +152,7 @@
       <label class="tab_item" for="tax">税額</label>
 
       <!-- ここから tab_content -->
-      <div class="tab_content" id="income_content">
+      <div class="tab_content" id="incomeContent">
         <div class="visible" id="applicant">
           <label>⚫︎申告者</label>
           <label>生年</label>

@@ -1,15 +1,22 @@
 "use strict";
-// ユーザーリストの作成
-const users = [
-    { id: 1, name: 'Alice', email: 'alice@example.com' },
-    { id: 2, name: 'Bob', email: 'bob@example.com' },
-];
-// ユーザーリストを表示する関数
-function displayUsers(users) {
-    users.forEach((user) => {
-        console.log(`ID: ${user.id}, Name: ${user.name}, Email: ${user.email}`);
-    });
-}
-// 関数の実行
-displayUsers(users);
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+__exportStar(require("./display"), exports);
+__exportStar(require("./input"), exports);
+__exportStar(require("./deductions"), exports);
+__exportStar(require("./tax"), exports);
+__exportStar(require("./functions"), exports);
 //# sourceMappingURL=index.js.map
