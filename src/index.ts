@@ -12,7 +12,7 @@ const users: User[] = [
 ];
 
 // ユーザーリストを表示する関数
-function displayUsers(users: User[]): void {
+export function displayUsers(users: User[]): void {
   users.forEach((user) => {
     console.log(`ID: ${user.id}, Name: ${user.name}, Email: ${user.email}`);
   });
