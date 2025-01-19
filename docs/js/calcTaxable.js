@@ -1,8 +1,5 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.calcTaxable = void 0;
-const functions_1 = require("./functions");
-function calcTaxable(taxYear, income) {
+import { RoundBy } from './functions';
+export function calcTaxable(taxYear, income) {
     console.log('calcTaxable');
     function getValuesForYear(values, year, keys) {
         const result = {};
@@ -17,6 +14,7 @@ function calcTaxable(taxYear, income) {
         return result;
     }
     function getIncomeTaxRate(taxYear, income) {
+        var _a, _b;
         const taxValues = [
             { year: 2020, max10Per: 8500000, max5Per: Infinity },
             { year: 2017, max10Per: 10000000, max5Per: Infinity },
@@ -29,8 +27,8 @@ function calcTaxable(taxYear, income) {
             fortyPer: 1800000,
             thirtyPer: 3600000,
             twentyPer: 6600000,
-            tenPer: values.max10Per ?? 0,
-            fivePer: values.max5Per ?? 0,
+            tenPer: (_a = values.max10Per) !== null && _a !== void 0 ? _a : 0,
+            fivePer: (_b = values.max5Per) !== null && _b !== void 0 ? _b : 0,
             zeroPer: Infinity,
         };
         const thresholds = [
@@ -73,14 +71,13 @@ function calcTaxable(taxYear, income) {
                             : income < 1628000
                                 ? 974000
                                 : incomeTaxSystem.rate < 0.9
-                                    ? (0, functions_1.RoundBy)(income, 4000) * incomeTaxSystem.rate - incomeTaxSystem.deduction
+                                    ? RoundBy(income, 4000) * incomeTaxSystem.rate - incomeTaxSystem.deduction
                                     : incomeTaxSystem.rate < 0.99
-                                        ? (0, functions_1.RoundBy)(income * incomeTaxSystem.rate, 1) - incomeTaxSystem.deduction
+                                        ? RoundBy(income * incomeTaxSystem.rate, 1) - incomeTaxSystem.deduction
                                         : income - incomeTaxSystem.deduction;
     }
     else
         taxable = 0;
     return Math.max(taxable - incomeTaxSystem.offset, 0);
 }
-exports.calcTaxable = calcTaxable;
 //# sourceMappingURL=calcTaxable.js.map

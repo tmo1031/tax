@@ -1,17 +1,12 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const display_1 = require("./display");
-const input_1 = require("./input");
-const deductions_1 = require("./deductions");
-const tax_1 = require("./tax");
-const jquery_1 = __importDefault(require("jquery"));
+import { updateJapaneseYear, showTax } from './display';
+import { getTaxYear, getProfile, getTaxable, getDeductions } from './input';
+import { calcDeductions } from './deductions';
+import { calcTax } from './tax';
+import $ from 'jquery';
 const taxYearIds = ['taxYear'];
 function handleTaxYearChange(id) {
     console.log(`Tax Year changed: ${id}`);
-    (0, display_1.updateJapaneseYear)();
+    updateJapaneseYear();
 }
 const yearIds = ['taxYear', 'birthYear', 'birthYearS', 'moveInYear', 'renovYear'];
 function handleYearChange(id) {
@@ -21,13 +16,13 @@ function handleYearChange(id) {
 document.addEventListener('DOMContentLoaded', () => {
     console.log('DOMContentLoaded');
     // jQueryのイベントリスナーを設定
-    (0, jquery_1.default)(document).on('keypress', '.just-num', function (e) {
+    $(document).on('keypress', '.just-num', function (e) {
         const charCode = e.which ? e.which : e.key;
         if (typeof charCode === 'number' && charCode > 31 && (charCode < 48 || charCode > 57)) {
             return false;
         }
     });
-    (0, jquery_1.default)(document).on('input', '.currency-input', function () {
+    $(document).on('input', '.currency-input', function () {
         let val = this.value;
         val = val.replace(/,/g, '');
         if (val.length > 3) {
@@ -105,13 +100,13 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 function initialize() {
     console.log('initialize');
-    (0, display_1.updateJapaneseYear)();
-    (0, input_1.getTaxYear)();
-    (0, input_1.getProfile)();
-    (0, input_1.getTaxable)();
-    (0, input_1.getDeductions)();
-    (0, deductions_1.calcDeductions)();
-    (0, tax_1.calcTax)();
-    (0, display_1.showTax)();
+    updateJapaneseYear();
+    getTaxYear();
+    getProfile();
+    getTaxable();
+    getDeductions();
+    calcDeductions();
+    calcTax();
+    showTax();
 }
 //# sourceMappingURL=setEventListener.js.map

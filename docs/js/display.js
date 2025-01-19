@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.showTax = exports.updateTax = exports.updateDeductions = exports.updateTaxable = exports.updateJapaneseYear = void 0;
-function updateJapaneseYear() {
+export function updateJapaneseYear() {
     const taxYearInput = document.getElementById('taxYear');
     const japaneseYearLabel = document.getElementById('japaneseYear');
     if (!taxYearInput || !japaneseYearLabel) {
@@ -23,21 +20,16 @@ function updateJapaneseYear() {
         japaneseYearLabel.textContent = '昭和' + `${taxYear - showaStartYear + 1}`;
     }
 }
-exports.updateJapaneseYear = updateJapaneseYear;
-function updateTaxable() {
+export function updateTaxable() {
     return;
 }
-exports.updateTaxable = updateTaxable;
-function updateDeductions() {
+export function updateDeductions() {
     return;
 }
-exports.updateDeductions = updateDeductions;
-function updateTax() {
+export function updateTax() {
     return;
 }
-exports.updateTax = updateTax;
-function showTax() {
+export function showTax() {
     return;
 }
-exports.showTax = showTax;
 //# sourceMappingURL=display.js.map

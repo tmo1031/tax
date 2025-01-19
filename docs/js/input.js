@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.getDeductions = exports.getTaxable = exports.getProfile = exports.getTaxYear = void 0;
-function getTaxYear() {
+export function getTaxYear() {
     const taxYearInput = document.getElementById('taxYear');
     if (!taxYearInput) {
         console.error('TaxYear input not found');
@@ -9,8 +6,7 @@ function getTaxYear() {
     }
     return parseInt(taxYearInput.value, 10);
 }
-exports.getTaxYear = getTaxYear;
-function getProfile() {
+export function getProfile() {
     const profileInput = document.getElementById('profile');
     if (!profileInput) {
         console.error('Profile input not found');
@@ -18,8 +14,7 @@ function getProfile() {
     }
     return parseInt(profileInput.value, 10);
 }
-exports.getProfile = getProfile;
-function getTaxable() {
+export function getTaxable() {
     const taxableInput = document.getElementById('taxable');
     if (!taxableInput) {
         console.error('Taxable input not found');
@@ -27,8 +22,7 @@ function getTaxable() {
     }
     return parseInt(taxableInput.value, 10);
 }
-exports.getTaxable = getTaxable;
-function getDeductions() {
+export function getDeductions() {
     const deductionsInput = document.getElementById('deductions');
     if (!deductionsInput) {
         console.error('Deductions input not found');
@@ -36,5 +30,4 @@ function getDeductions() {
     }
     return parseInt(deductionsInput.value, 10);
 }
-exports.getDeductions = getDeductions;
 //# sourceMappingURL=input.js.map
