@@ -1,8 +1,7 @@
-import { updateJapaneseYear, showTax } from './display';
-import { getTaxYear, getProfile, getTaxable, getDeductions } from './input';
-import { calcDeductions } from './deductions';
-import { calcTax } from './tax';
-import $ from 'jquery';
+import { getTaxYear, getProfile, getTaxable, getDeductions } from './input.js';
+import { calcDeductions } from './deductions.js';
+import { calcTax } from './tax.js';
+import { updateJapaneseYear, showTax } from './display.js';
 const taxYearIds = ['taxYear'];
 function handleTaxYearChange(id) {
     console.log(`Tax Year changed: ${id}`);
@@ -15,29 +14,35 @@ function handleYearChange(id) {
 }
 document.addEventListener('DOMContentLoaded', () => {
     console.log('DOMContentLoaded');
-    // jQueryのイベントリスナーを設定
-    $(document).on('keypress', '.just-num', function (e) {
-        const charCode = e.which ? e.which : e.key;
-        if (typeof charCode === 'number' && charCode > 31 && (charCode < 48 || charCode > 57)) {
-            return false;
-        }
-    });
-    $(document).on('input', '.currency-input', function () {
-        let val = this.value;
-        val = val.replace(/,/g, '');
-        if (val.length > 3) {
-            const noCommas = Math.ceil(val.length / 3) - 1;
-            const remain = val.length - noCommas * 3;
-            const newVal = [];
-            for (let i = 0; i < noCommas; i++) {
-                newVal.unshift(val.substring(val.length - i * 3 - 3, val.length - i * 3));
+    // 数字のみ入力を許可するイベントリスナーを設定
+    document.querySelectorAll('.just-num').forEach((element) => {
+        element.addEventListener('keypress', (e) => {
+            const charCode = e.which ? e.which : e.keyCode;
+            if (typeof charCode === 'number' && charCode > 31 && (charCode < 48 || charCode > 57)) {
+                e.preventDefault();
             }
-            newVal.unshift(val.substring(0, remain));
-            this.value = newVal.join(',');
-        }
-        else {
-            this.value = val;
-        }
+        });
+    });
+    // カンマ区切りの入力を処理するイベントリスナーを設定
+    document.querySelectorAll('.currency-input').forEach((element) => {
+        element.addEventListener('input', (e) => {
+            const target = e.target;
+            let val = target.value;
+            val = val.replace(/,/g, '');
+            if (val.length > 3) {
+                const noCommas = Math.ceil(val.length / 3) - 1;
+                const remain = val.length - noCommas * 3;
+                const newVal = [];
+                for (let i = 0; i < noCommas; i++) {
+                    newVal.unshift(val.substring(val.length - i * 3 - 3, val.length - i * 3));
+                }
+                newVal.unshift(val.substring(0, remain));
+                target.value = newVal.join(',');
+            }
+            else {
+                target.value = val;
+            }
+        });
     });
     // すべての入力要素を取得
     const inputs = document.querySelectorAll('input');

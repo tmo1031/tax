@@ -1,10 +1,13 @@
+//import { system, profile, deductionInput } from './objects.js';
+import { system } from './objects.js';
 export function getTaxYear() {
     const taxYearInput = document.getElementById('taxYear');
     if (!taxYearInput) {
         console.error('TaxYear input not found');
         return;
     }
-    return parseInt(taxYearInput.value, 10);
+    system.taxYear = parseInt(taxYearInput.value, 10);
+    return;
 }
 export function getProfile() {
     const profileInput = document.getElementById('profile');

@@ -1,6 +1,6 @@
-export * from './display';
-export * from './input';
-export * from './deductions';
-export * from './tax';
-export * from './functions';
+export * from './display.js';
+export * from './input.js';
+export * from './deductions.js';
+export * from './tax.js';
+export * from './functions.js';
 //# sourceMappingURL=index.js.map
