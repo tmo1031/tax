@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
   <head>
     <!-- Google tag (gtag.js) -->
@@ -522,15 +522,15 @@
         </select>
       </div>
       <div class="tab_content" id="taxContent">
-        <table id="deductions1Table">
-          <thead id="deductions1Head">
+        <table id="incomeDeductionsTable">
+          <thead id="incomeDeductionsHead">
             <tr>
               <th class="name">所得控除</th>
               <th class="currency">所得税</th>
               <th class="currency">住民税</th>
             </tr>
           </thead>
-          <tbody id="deductions1Body">
+          <tbody id="incomeDeductionsBody">
             <tr>
               <td>雑損</td>
               <td id="casualtyLossS" class="currency-input">0</td>
@@ -589,15 +589,15 @@
           </tbody>
         </table>
         <br />
-        <table id="deductions2Table">
-          <thead id="deductions2Head">
+        <table id="taxCreditsTable">
+          <thead id="taxCreditsHead">
             <tr>
               <th class="name">税額控除</th>
               <th class="currency">所得税</th>
               <th class="currency">住民税</th>
             </tr>
           </thead>
-          <tbody id="deductions2Body">
+          <tbody id="taxCreditsBody">
             <tr>
               <td>配当控除</td>
               <td id="dividendS" class="currency-input">0</td>
@@ -610,13 +610,13 @@
             </tr>
             <tr>
               <td>政党等寄附金等</td>
-              <td id="contributionsS" class="currency-input">0</td>
+              <td id="donationsCreditS" class="currency-input">0</td>
               <td></td>
             </tr>
             <tr>
               <td>寄附金税額控除</td>
               <td></td>
-              <td id="donationsJ" class="currency-input">0</td>
+              <td id="donationsCreditJ" class="currency-input">0</td>
             </tr>
             <tr>
               <td>住宅耐震改修特別控除</td>
@@ -636,12 +636,12 @@
             <tr>
               <td>配当割税額控除</td>
               <td></td>
-              <td id="withholdingDividendJ2" class="currency-input">0</td>
+              <td id="withholdingDividendCreditJ" class="currency-input">0</td>
             </tr>
             <tr>
               <td>株式等譲渡所得割額控除</td>
               <td></td>
-              <td id="withholdingStockJ2" class="currency-input">0</td>
+              <td id="withholdingStockCreditJ" class="currency-input">0</td>
             </tr>
           </tbody>
         </table>
@@ -661,8 +661,8 @@
           <tbody id="totalBody">
             <tr>
               <td>総所得</td>
-              <td id="incomeTaxS" class="currency-input">0</td>
-              <td id="incomeTaxJ" class="currency-input">0</td>
+              <td id="incomeS" class="currency-input">0</td>
+              <td id="incomeJ" class="currency-input">0</td>
             </tr>
             <tr>
               <td>所得控除計</td>
