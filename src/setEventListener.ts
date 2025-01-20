@@ -1,8 +1,7 @@
-import { updateJapaneseYear, showTax } from './display';
-import { getTaxYear, getProfile, getTaxable, getDeductions } from './input';
-import { calcDeductions } from './deductions';
-import { calcTax } from './tax';
-import $ from 'jquery';
+import { getTaxYear, getProfile, getTaxable, getDeductions } from './input.js';
+import { calcDeductions } from './deductions.js';
+import { calcTax } from './tax.js';
+import { updateJapaneseYear, showTax } from './display.js';
 
 const taxYearIds = ['taxYear'];
 function handleTaxYearChange(id: string) {
@@ -18,30 +17,38 @@ function handleYearChange(id: string) {
 
 document.addEventListener('DOMContentLoaded', () => {
   console.log('DOMContentLoaded');
-  // jQueryのイベントリスナーを設定
-  $(document).on('keypress', '.just-num', function (e: JQuery.KeyPressEvent) {
-    const charCode = e.which ? e.which : e.key;
-    if (typeof charCode === 'number' && charCode > 31 && (charCode < 48 || charCode > 57)) {
-      return false;
-    }
+
+  // 数字のみ入力を許可するイベントリスナーを設定
+  document.querySelectorAll<HTMLInputElement>('.just-num').forEach((element) => {
+    element.addEventListener('keypress', (e) => {
+      const charCode = e.which ? e.which : e.keyCode;
+      if (typeof charCode === 'number' && charCode > 31 && (charCode < 48 || charCode > 57)) {
+        e.preventDefault();
+      }
+    });
   });
 
-  $(document).on('input', '.currency-input', function () {
-    let val = (this as HTMLInputElement).value;
-    val = val.replace(/,/g, '');
-    if (val.length > 3) {
-      const noCommas = Math.ceil(val.length / 3) - 1;
-      const remain = val.length - noCommas * 3;
-      const newVal: string[] = [];
-      for (let i = 0; i < noCommas; i++) {
-        newVal.unshift(val.substring(val.length - i * 3 - 3, val.length - i * 3));
+  // カンマ区切りの入力を処理するイベントリスナーを設定
+  document.querySelectorAll<HTMLInputElement>('.currency-input').forEach((element) => {
+    element.addEventListener('input', (e) => {
+      const target = e.target as HTMLInputElement;
+      let val = target.value;
+      val = val.replace(/,/g, '');
+      if (val.length > 3) {
+        const noCommas = Math.ceil(val.length / 3) - 1;
+        const remain = val.length - noCommas * 3;
+        const newVal: string[] = [];
+        for (let i = 0; i < noCommas; i++) {
+          newVal.unshift(val.substring(val.length - i * 3 - 3, val.length - i * 3));
+        }
+        newVal.unshift(val.substring(0, remain));
+        target.value = newVal.join(',');
+      } else {
+        target.value = val;
       }
-      newVal.unshift(val.substring(0, remain));
-      (this as HTMLInputElement).value = newVal.join(',');
-    } else {
-      (this as HTMLInputElement).value = val;
-    }
+    });
   });
+
   // すべての入力要素を取得
   const inputs = document.querySelectorAll<HTMLInputElement>('input');
   const selects = document.querySelectorAll<HTMLSelectElement>('select');
