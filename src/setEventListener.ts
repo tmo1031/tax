@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const inputs = document.querySelectorAll<HTMLInputElement>('input');
   const selects = document.querySelectorAll<HTMLSelectElement>('select');
   const radios = document.querySelectorAll<HTMLInputElement>('input[type="radio"]');
-  const checkboxes = document.querySelectorAll<HTMLInputElement>('input[type="checkbox"]');
+  //const checkboxes = document.querySelectorAll<HTMLInputElement>('input[type="checkbox"]');
   //const buttons = document.querySelectorAll<HTMLButtonElement>('button');
 
   // 各入力要素にイベントリスナーを追加
@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // 各チェックボックスにイベントリスナーを追加
+  /*   // 各チェックボックスにイベントリスナーを追加
   checkboxes.forEach((checkbox) => {
     checkbox.addEventListener('change', (event) => {
       const target = event.target as HTMLInputElement;
@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
       specialEvents(target.id);
     });
   });
-
+ */
   // 各ボタンにイベントリスナーを追加
   // buttons.forEach((button) => {
   //   button.addEventListener('click', (event) => {
