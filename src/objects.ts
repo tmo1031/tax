@@ -41,7 +41,7 @@ type Contract = {
   month: number;
   age: number;
   price: number;
-  price_Sp: number;
+  priceSp: number;
   resident: number;
   debt: number;
 };
@@ -200,7 +200,7 @@ const createContract = (): Contract =>
     month: 0,
     age: 0,
     price: 0,
-    price_Sp: 0,
+    priceSp: 0,
     resident: 0,
     debt: 0,
   });

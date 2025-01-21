@@ -179,6 +179,25 @@
               </tr>
             </tbody>
           </table>
+        </div>
+        <div class="visible" id="attributes">
+          <label>⚫︎本人該当区分</label>
+          <br />
+          <label><input id="minors" type="checkbox" />未成年者</label>
+          <select id="disability">
+            <option value="0">障害有無</option>
+            <option value="0">障害無し</option>
+            <option value="1">障害者(他)</option>
+            <option value="2">障害者(特別)</option>
+          </select>
+          <select id="single">
+            <option value="0">寡婦(夫)該当</option>
+            <option value="0">該当無し</option>
+            <option value="1">寡婦(夫)</option>
+            <option value="2" class="hidden">ひとり親</option>
+          </select>
+          <label><input id="student" type="checkbox" />勤労学生</label>
+          <br />
           <br />
         </div>
         <div class="hidden" id="spouse">
@@ -209,37 +228,29 @@
           </table>
           <br />
         </div>
-        <label>⚫︎扶養親族(配偶者を除く)</label>
-        <br />
-        <label>特定</label>
-        <input id="dependentSpecified" type="number" size="4" value="0" min="0" max="10" step="1" />
-        <label>老人(同居)</label>
-        <input id="dependentElderlyLT" type="number" size="4 " value="0" min="0" max="10" step="1" />
-        <label>老人</label>
-        <input id="dependentElderly" type="number" size="4" value="0" min="0" max="10" step="1" />
-        <label>16歳未満</label>
-        <input id="dependentChild" type="number" size="4" value="0" min="0" max="10" step="1" />
-        <label>その他</label>
-        <input id="dependentOther" type="number" size="4" value="0" min="0" max="10" step="1" />
-        <br />
-        <label>障害者(同居)</label>
-        <input id="dependentDisabilityLT" type="number" size="4" value="0" min="0" max="10" step="1" />
-        <label>障害者(特別)</label>
-        <input id="dependentDisabilityP" type="number" size="4" value="0" min="0" max="10" step="1" />
-        <label>障害者(他)</label>
-        <input id="dependentDisabilityO" type="number" size="4" value="0" min="0" max="10" step="1" />
-        <br />
-        <br />
-        <label>⚫︎本人該当区分</label>
-        <br />
-        <label><input id="minors" type="checkbox" />未成年者</label>
-        <label><input id="disabilityP" type="checkbox" />障害者(特別)</label>
-        <label><input id="disabilityO" type="checkbox" />障害者(他)</label>
-        <label><input id="singleP" type="checkbox" />ひとり親</label>
-        <label><input id="singleO" type="checkbox" />寡婦</label>
-        <label><input id="student" type="checkbox" />勤労学生</label>
-        <br />
-        <br />
+        <div class="visible" id="dependents">
+          <label>⚫︎扶養親族(配偶者を除く)</label>
+          <br />
+          <label>特定</label>
+          <input id="dependentSpecified" type="number" size="4" value="0" min="0" max="10" step="1" />
+          <label>老人(同居)</label>
+          <input id="dependentElderlyLT" type="number" size="4 " value="0" min="0" max="10" step="1" />
+          <label>老人</label>
+          <input id="dependentElderly" type="number" size="4" value="0" min="0" max="10" step="1" />
+          <label>16歳未満</label>
+          <input id="dependentChild" type="number" size="4" value="0" min="0" max="10" step="1" />
+          <label>その他</label>
+          <input id="dependentOther" type="number" size="4" value="0" min="0" max="10" step="1" />
+          <br />
+          <label>障害者(同居)</label>
+          <input id="dependentDisabilityLT" type="number" size="4" value="0" min="0" max="10" step="1" />
+          <label>障害者(特別)</label>
+          <input id="dependentDisabilityP" type="number" size="4" value="0" min="0" max="10" step="1" />
+          <label>障害者(他)</label>
+          <input id="dependentDisabilityO" type="number" size="4" value="0" min="0" max="10" step="1" />
+          <br />
+          <br />
+        </div>
         <div class="visible" id="house">
           <label>⚫︎住宅</label>
           <label>入居年</label>
@@ -294,7 +305,7 @@
               <tr>
                 <td>増改築</td>
                 <td><input id="renovPrice" type="text" class="just-num currency-input" value="0" /></td>
-                <td><input id="renovSpPrice" type="text" class="just-num currency-input" value="0" /></td>
+                <td><input id="renovPriceSp" type="text" class="just-num currency-input" value="0" /></td>
                 <td><input id="renovResident" type="number" class="percent" value="100" /></td>
                 <td><input id="renovDebt" type="number" class="percent" value="100" /></td>
               </tr>

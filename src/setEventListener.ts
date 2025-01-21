@@ -1,19 +1,8 @@
-import { getTaxYear, getProfile, getTaxable, getDeductions } from './input.js';
+import { getTaxYear, getProfile, getDeductionInput, getTaxable } from './input.js';
 import { calcDeductions } from './deductions.js';
 import { calcTax } from './tax.js';
 import { updateJapaneseYear, showTax } from './display.js';
-
-const taxYearIds = ['taxYear'];
-function handleTaxYearChange(id: string) {
-  console.log(`Tax Year changed: ${id}`);
-  updateJapaneseYear();
-}
-
-const yearIds = ['taxYear', 'birthYear', 'birthYearS', 'moveInYear', 'renovYear'];
-function handleYearChange(id: string) {
-  console.log(`Year changed: ${id}`);
-  // 必要に応じて他の処理を追加
-}
+import { specialEvents } from './events.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   console.log('DOMContentLoaded');
@@ -53,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const inputs = document.querySelectorAll<HTMLInputElement>('input');
   const selects = document.querySelectorAll<HTMLSelectElement>('select');
   const radios = document.querySelectorAll<HTMLInputElement>('input[type="radio"]');
-  //const checkboxes = document.querySelectorAll<HTMLInputElement>('input[type="checkbox"]');
+  const checkboxes = document.querySelectorAll<HTMLInputElement>('input[type="checkbox"]');
   //const buttons = document.querySelectorAll<HTMLButtonElement>('button');
 
   // 各入力要素にイベントリスナーを追加
@@ -61,12 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
     input.addEventListener('input', (event) => {
       const target = event.target as HTMLInputElement;
       console.log(`Input changed: ID=${target.id}, Value=${target.value}`);
-      if (taxYearIds.includes(target.id)) {
-        handleTaxYearChange(target.id);
-      }
-      if (yearIds.includes(target.id)) {
-        handleYearChange(target.id);
-      }
+      specialEvents(target.id);
     });
   });
 
@@ -75,9 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
     select.addEventListener('change', (event) => {
       const target = event.target as HTMLSelectElement;
       console.log(`Select changed: ID=${target.id}, Value=${target.value}`);
-      if (yearIds.includes(target.id)) {
-        handleYearChange(target.id);
-      }
+      specialEvents(target.id);
     });
   });
 
@@ -86,23 +68,18 @@ document.addEventListener('DOMContentLoaded', () => {
     radio.addEventListener('change', (event) => {
       const target = event.target as HTMLInputElement;
       console.log(`Radio changed: Name=${target.name}, Value=${target.value}`);
-      if (yearIds.includes(target.id)) {
-        handleYearChange(target.id);
-      }
+      specialEvents(target.id);
     });
   });
 
   // 各チェックボックスにイベントリスナーを追加
-  // checkboxes.forEach((checkbox) => {
-  //   checkbox.addEventListener('change', (event) => {
-  //     const target = event.target as HTMLInputElement;
-
-  //     console.log(`Checkbox changed: ID=${target.id}, Checked=${target.checked}`);
-  //     if (yearIds.includes(target.id)) {
-  //       handleYearChange(target.id);
-  //     }
-  //   });
-  // });
+  checkboxes.forEach((checkbox) => {
+    checkbox.addEventListener('change', (event) => {
+      const target = event.target as HTMLInputElement;
+      console.log(`Checkbox changed: ID=${target.id}, Checked=${target.checked}`);
+      specialEvents(target.id);
+    });
+  });
 
   // 各ボタンにイベントリスナーを追加
   // buttons.forEach((button) => {
@@ -120,8 +97,8 @@ function initialize() {
   updateJapaneseYear();
   getTaxYear();
   getProfile();
+  getDeductionInput();
   getTaxable();
-  getDeductions();
   calcDeductions();
   calcTax();
   showTax();
