@@ -53,8 +53,19 @@ function handleHasSpouseChange(id: string) {
 const loanSelectIDs = ['LoanSelect'];
 function handleLoanSelectChange(id: string) {
   console.log(`Loan Select changed: ${id}`);
-  // updateLoanSelect();
   // ローンの有無で表示を切り替える
+  const loanSelectElement = document.getElementById('LoanSelect') as HTMLSelectElement | null;
+  const houseElement = document.getElementById('house') as HTMLDivElement | null;
+  const renovationElement = document.getElementById('renovation') as HTMLDivElement | null;
+  const loanElement = document.getElementById('loan') as HTMLDivElement | null;
+  if (loanSelectElement && houseElement && renovationElement && loanElement) {
+    const loanType = loanSelectElement.value;
+    houseElement.style.display = loanType === 'Purchase' || loanType === 'Both' ? 'block' : 'none';
+    renovationElement.style.display = loanType === 'Renovation' || loanType === 'Both' ? 'block' : 'none';
+    loanElement.style.display = loanType === 'None' || loanType === '' ? 'none' : 'block';
+  } else {
+    console.error('Loan select element not found');
+  }
 }
 
 /* const attributesIds = ['minors', 'disabilityP', 'disabilityO', 'singleP', 'singleO', 'student'];

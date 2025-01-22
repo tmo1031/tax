@@ -1,4 +1,3 @@
-//import { system, profile, deductionInput } from './objects.js';
 import { system } from './objects.js';
 import { getProfile, getDeductionInput } from './elements.js';
 
@@ -14,12 +13,3 @@ export function getTaxYear() {
 
 export { getProfile };
 export { getDeductionInput };
-
-export function getTaxable() {
-  const taxableInput = document.getElementById('taxable') as HTMLInputElement | null;
-  if (!taxableInput) {
-    console.error('Taxable input not found');
-    return;
-  }
-  return parseInt(taxableInput.value, 10);
-}

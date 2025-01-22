@@ -1,4 +1,5 @@
-import { getTaxYear, getProfile, getDeductionInput, getTaxable } from './input.js';
+import { getTaxYear, getProfile, getDeductionInput } from './input.js';
+import { getTaxable } from './taxable.js';
 import { calcDeductions } from './deductions.js';
 import { calcTax } from './tax.js';
 import { updateJapaneseYear, showTax } from './display.js';
