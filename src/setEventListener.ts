@@ -1,9 +1,4 @@
-import { getTaxYear, getProfile, getDeductionInput } from './input.js';
-import { getTaxable } from './taxable.js';
-import { calcDeductions } from './deductions.js';
-import { calcTax } from './tax.js';
-import { updateJapaneseYear, showTax } from './display.js';
-import { specialEvents } from './events.js';
+import { initialize, refresh, specialEvents } from './main.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   console.log('DOMContentLoaded');
@@ -51,6 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
     input.addEventListener('input', (event) => {
       const target = event.target as HTMLInputElement;
       console.log(`Input changed: ID=${target.id}, Value=${target.value}`);
+      refresh();
       specialEvents(target.id);
     });
   });
@@ -60,6 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
     select.addEventListener('change', (event) => {
       const target = event.target as HTMLSelectElement;
       console.log(`Select changed: ID=${target.id}, Value=${target.value}`);
+      refresh();
       specialEvents(target.id);
     });
   });
@@ -69,6 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
     radio.addEventListener('change', (event) => {
       const target = event.target as HTMLInputElement;
       console.log(`Radio changed: Name=${target.name}, Value=${target.value}`);
+      refresh();
       specialEvents(target.id);
     });
   });
@@ -93,14 +91,3 @@ document.addEventListener('DOMContentLoaded', () => {
   // ロード時の処理
   initialize();
 });
-function initialize() {
-  console.log('initialize');
-  updateJapaneseYear();
-  getTaxYear();
-  getProfile();
-  getDeductionInput();
-  getTaxable();
-  calcDeductions();
-  calcTax();
-  showTax();
-}

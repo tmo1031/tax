@@ -328,7 +328,6 @@
             </tbody>
           </table>
           <br />
-          <br />
           <select id="quality">
             <option value="null">認定住宅等</option>
             <option value="0">一般住宅</option>
@@ -343,16 +342,30 @@
             <option value="8">8%</option>
             <option value="10">10%</option>
           </select>
-          <label><input id="applyResidentTax" type="checkbox" />市区町村への控除申告をする(H11-18入居)</label>
-          <label><input id="spH19" type="checkbox" />特例適用(H19,20)</label>
-          <label><input id="spR1" type="checkbox" />特別特定取得(R1,2)</label>
-          <label><input id="covid19" type="checkbox" />コロナによる入居遅れの救済(R2,3)</label>
-          <label><input id="spR3" type="checkbox" />特別特例取得(R2,3)</label>
-          <label><input id="small" type="checkbox" />小規模居住用家屋</label>
-          <label><input id="parenting" type="checkbox" />子育て世帯(R6)</label>
-          <label><input id="spR6" type="checkbox" />その他住宅の特例(R6)</label>
-
-          <br />
+          <div class="hidden" id="applyResidentTaxDiv">
+            <label><input id="applyResidentTax" type="checkbox" />市区町村への控除申告をする(H11-18入居)</label>
+          </div>
+          <div class="hidden" id="spH19Div">
+            <label><input id="spH19" type="checkbox" />特例適用(H19,20)</label>
+          </div>
+          <div class="hidden" id="spR1Div">
+            <label><input id="spR1" type="checkbox" />特別特定取得(R1,2)</label>
+          </div>
+          <div class="hidden" id="covid19Div">
+            <label><input id="covid19" type="checkbox" />コロナによる入居遅れの救済(R2,3)</label>
+          </div>
+          <div class="hidden" id="spR3Div">
+            <label><input id="spR3" type="checkbox" />特別特例取得(R2,3)</label>
+          </div>
+          <div class="hidden" id="smallDiv">
+            <label><input id="small" type="checkbox" />小規模居住用家屋</label>
+          </div>
+          <div class="hidden" id="parentingDiv">
+            <label><input id="parenting" type="checkbox" />子育て世帯(R6)</label>
+          </div>
+          <div class="hidden" id="spR6Div">
+            <label><input id="spR6" type="checkbox" />その他住宅の特例(R6)</label>
+          </div>
         </div>
       </div>
       <div class="tab_content" id="businessContent">
