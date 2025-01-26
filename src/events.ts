@@ -32,11 +32,11 @@ export function updateJapaneseYear() {
 export function handleYearChange(id: string) {
   console.log(`Year changed: ${id}`);
   const taxYearElement = document.getElementById('taxYear') as HTMLInputElement | null;
-  const birthYearElement = document.getElementById('birthYear') as HTMLInputElement | null;
-  const birthYearSElement = document.getElementById('birthYearS') as HTMLInputElement | null;
+  const birthYearElement = document.getElementById('applicantBirthYear') as HTMLInputElement | null;
+  const birthYearSElement = document.getElementById('spouseBirthYear') as HTMLInputElement | null;
   const moveInYearElement = document.getElementById('moveInYear') as HTMLInputElement | null;
   const renovYearElement = document.getElementById('renovYear') as HTMLInputElement | null;
-  const minorsElement = document.getElementById('minors') as HTMLInputElement | null;
+  const minorsElement = document.getElementById('applicantAttributesMinors') as HTMLInputElement | null;
   const applyResidentTaxDivElement = document.getElementById('applyResidentTaxDiv') as HTMLDivElement | null;
   const spH19DivElement = document.getElementById('spH19Div') as HTMLDivElement | null;
   const spR1DivElement = document.getElementById('spR1Div') as HTMLDivElement | null;
@@ -105,7 +105,7 @@ export function handleYearChange(id: string) {
 export function handleHasSpouseChange(id: string) {
   // 配偶者の有無によって配偶者の入力を有効化を切り替える
   console.log(`Has Spouse changed: ${id}`);
-  const spouseCheckElement = document.getElementById('spouseCheck') as HTMLInputElement | null;
+  const spouseCheckElement = document.getElementById('applicantSpouse') as HTMLInputElement | null;
   const spouseElement = document.getElementById('spouse') as HTMLDivElement | null;
   if (spouseCheckElement && spouseElement) {
     const isChecked = spouseCheckElement.checked;

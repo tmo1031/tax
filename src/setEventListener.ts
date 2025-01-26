@@ -46,8 +46,8 @@ document.addEventListener('DOMContentLoaded', () => {
     input.addEventListener('input', (event) => {
       const target = event.target as HTMLInputElement;
       console.log(`Input changed: ID=${target.id}, Value=${target.value}`);
-      refresh();
       specialEvents(target.id);
+      refresh();
     });
   });
 
@@ -56,8 +56,8 @@ document.addEventListener('DOMContentLoaded', () => {
     select.addEventListener('change', (event) => {
       const target = event.target as HTMLSelectElement;
       console.log(`Select changed: ID=${target.id}, Value=${target.value}`);
-      refresh();
       specialEvents(target.id);
+      refresh();
     });
   });
 
@@ -66,8 +66,8 @@ document.addEventListener('DOMContentLoaded', () => {
     radio.addEventListener('change', (event) => {
       const target = event.target as HTMLInputElement;
       console.log(`Radio changed: Name=${target.name}, Value=${target.value}`);
-      refresh();
       specialEvents(target.id);
+      refresh();
     });
   });
 

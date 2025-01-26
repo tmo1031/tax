@@ -1,23 +1,354 @@
 //import { get } from 'jquery';
-import { profile /* deductionInput , incomeDeductions, personalDeductions, taxCredits, tax */ } from './objects';
-import { Currency } from './objects';
+import { profile /*, deductionInput , incomeDeductions, personalDeductions, taxCredits, tax */ } from './objects.js';
+import { Currency } from './objects.js';
 //import { ProfileType, DeductionInputType, TaxType, Currency ,} from './objects.js';
+
+type Value = number | string | boolean | Currency | null;
+
+type HtmlElement = {
+  element: HTMLInputElement | null;
+  value: (newValue?: number | string | boolean | Currency | null) => number | string | boolean | Currency | null;
+};
+
+type HtmlElements = {
+  [key: string]: HtmlElement;
+};
 
 const getElement = (id: string): HTMLInputElement | null => document.getElementById(id) as HTMLInputElement | null;
 
-export const profileElements: HtmlElements = {
-  applicantBirthYear: {
-    element: getElement('birthYear'),
+function setCurrency(value: string): Currency {
+  return { amount: parseInt(value.replace(/,/g, ''), 10) };
+}
+
+function createObjectMapping<T>(getter: () => T, setter: (value: T) => void): (value: Value) => T {
+  return (value: Value) => {
+    if (typeof value === typeof getter()) {
+      setter(value as T);
+    }
+    return getter();
+  };
+}
+
+const profileMapping: { [key: string]: (value: Value) => Value } = {
+  applicantBirthYear: createObjectMapping(
+    () => profile.applicant.year,
+    (value: number) => {
+      profile.applicant.year = value;
+    }
+  ),
+  applicantSpouse: createObjectMapping(
+    () => profile.applicant.attributes.hasSpouse,
+    (value: boolean) => {
+      profile.applicant.attributes.hasSpouse = value;
+    }
+  ),
+  applicantIncomeSalary: createObjectMapping(
+    () => profile.applicant.income.salary,
+    (value: Currency) => {
+      profile.applicant.income.salary = value;
+    }
+  ),
+  applicantIncomeOther: createObjectMapping(
+    () => profile.applicant.income.other,
+    (value: Currency) => {
+      profile.applicant.income.other = value;
+    }
+  ),
+  applicantTaxableSalary: createObjectMapping(
+    () => profile.applicant.taxable.salary,
+    (value: Currency) => {
+      profile.applicant.taxable.salary = value;
+    }
+  ),
+  applicantTaxableOther: createObjectMapping(
+    () => profile.applicant.taxable.other,
+    (value: Currency) => {
+      profile.applicant.taxable.other = value;
+    }
+  ),
+  // 他のマッピングも追加可能
+  /*
+  applicantAttributesMinors: createObjectMapping(
+    () => profile.applicant.attributes.minors,
+    (value: boolean) => {
+      profile.applicant.attributes.minors = value;
+    }
+  ),
+  applicantAttributesDisability: createObjectMapping(
+    () => profile.applicant.attributes.disability,
+    (value: number) => {
+      profile.applicant.attributes.disability = value;
+    }
+  ),
+  applicantAttributesSingleP: createObjectMapping(
+    () => profile.applicant.attributes.single,
+    (value: number) => {
+      profile.applicant.attributes.single = value;
+    }
+  ),
+  applicantAttributesStudent: createObjectMapping(
+    () => profile.applicant.attributes.student,
+    (value: number) => {
+      profile.applicant.attributes.student = value;
+    }
+  ),
+  spouseBirthYear: createObjectMapping(
+    () => profile.spouse.year,
+    (value: number) => {
+      profile.spouse.year = value;
+    }
+  ),
+  spouseIncomeSalary: createObjectMapping(
+    () => profile.spouse.income.salary,
+    (value: Currency) => {
+      profile.spouse.income.salary = value;
+    }
+  ),
+  spouseIncomeOther: createObjectMapping(
+    () => profile.spouse.income.other,
+    (value: Currency) => {
+      profile.spouse.income.other = value;
+    }
+  ),
+  spouseTaxableSalary: createObjectMapping(
+    () => profile.spouse.taxable.salary,
+    (value: Currency) => {
+      profile.spouse.taxable.salary = value;
+    }
+  ),
+  spouseTaxableOther: createObjectMapping(
+    () => profile.spouse.taxable.other,
+    (value: Currency) => {
+      profile.spouse.taxable.other = value;
+    }
+  ),
+  dependentSpecified: createObjectMapping(
+    () => profile.dependent.specified,
+    (value: number) => {
+      profile.dependent.specified = value;
+    }
+  ),
+  dependentElderlyLt: createObjectMapping(
+    () => profile.dependent.elderlyLt,
+    (value: number) => {
+      profile.dependent.elderlyLt = value;
+    }
+  ),
+  dependentElderly: createObjectMapping(
+    () => profile.dependent.elderly,
+    (value: number) => {
+      profile.dependent.elderly = value;
+    }
+  ),
+  dependentChild: createObjectMapping(
+    () => profile.dependent.child,
+    (value: number) => {
+      profile.dependent.child = value;
+    }
+  ),
+  dependentOther: createObjectMapping(
+    () => profile.dependent.other,
+    (value: number) => {
+      profile.dependent.other = value;
+    }
+  ),
+  dependentDisabilityLt: createObjectMapping(
+    () => profile.dependent.disabilityLt,
+    (value: number) => {
+      profile.dependent.disabilityLt = value;
+    }
+  ),
+  dependentDisabilityP: createObjectMapping(
+    () => profile.dependent.disabilityP,
+    (value: number) => {
+      profile.dependent.disabilityP = value;
+    }
+  ),
+  dependentDisabilityO: createObjectMapping(
+    () => profile.dependent.disabilityO,
+    (value: number) => {
+      profile.dependent.disabilityO = value;
+    }
+  ),
+  estateHouseYear: createObjectMapping(
+    () => profile.estate.house.year,
+    (value: number) => {
+      profile.estate.house.year = value;
+    }
+  ),
+  estateHouseMonth: createObjectMapping(
+    () => profile.estate.house.month,
+    (value: number) => {
+      profile.estate.house.month = value;
+    }
+  ),
+  estateHousePrice: createObjectMapping(
+    () => profile.estate.house.price,
+    (value: Currency) => {
+      profile.estate.house.price = value;
+    }
+  ),
+  estateHouseResident: createObjectMapping(
+    () => profile.estate.house.resident,
+    (value: number) => {
+      profile.estate.house.resident = value;
+    }
+  ),
+  estateHouseDebt: createObjectMapping(
+    () => profile.estate.house.debt,
+    (value: number) => {
+      profile.estate.house.debt = value;
+    }
+  ),
+  estateLandYear: createObjectMapping(
+    () => profile.estate.land.year,
+    (value: number) => {
+      profile.estate.land.year = value;
+    }
+  ),
+  estateLandMonth: createObjectMapping(
+    () => profile.estate.land.month,
+    (value: number) => {
+      profile.estate.land.month = value;
+    }
+  ),
+  estateLandPrice: createObjectMapping(
+    () => profile.estate.land.price,
+    (value: Currency) => {
+      profile.estate.land.price = value;
+    }
+  ),
+  estateLandResident: createObjectMapping(
+    () => profile.estate.land.resident,
+    (value: number) => {
+      profile.estate.land.resident = value;
+    }
+  ),
+  estateLandDebt: createObjectMapping(
+    () => profile.estate.land.debt,
+    (value: number) => {
+      profile.estate.land.debt = value;
+    }
+  ),
+  estateRenovationYear: createObjectMapping(
+    () => profile.estate.renovation.year,
+    (value: number) => {
+      profile.estate.renovation.year = value;
+    }
+  ),
+  estateRenovationMonth: createObjectMapping(
+    () => profile.estate.renovation.month,
+    (value: number) => {
+      profile.estate.renovation.month = value;
+    }
+  ),
+  estateRenovationPrice: createObjectMapping(
+    () => profile.estate.renovation.price,
+    (value: Currency) => {
+      profile.estate.renovation.price = value;
+    }
+  ),
+  estateRenovationPriceSp: createObjectMapping(
+    () => profile.estate.renovation.priceSp,
+    (value: Currency) => {
+      profile.estate.renovation.priceSp = value;
+    }
+  ),
+  estateRenovationResident: createObjectMapping(
+    () => profile.estate.renovation.resident,
+    (value: number) => {
+      profile.estate.renovation.resident = value;
+    }
+  ),
+  estateRenovationDebt: createObjectMapping(
+    () => profile.estate.renovation.debt,
+    (value: number) => {
+      profile.estate.renovation.debt = value;
+    }
+  ),
+  estateLoanBalance: createObjectMapping(
+    () => profile.estate.loan.balance,
+    (value: Currency) => {
+      profile.estate.loan.balance = value;
+    }
+  ),
+  estateCaseQuality: createObjectMapping(
+    () => profile.estate.case.quality,
+    (value: number) => {
+      profile.estate.case.quality = value;
+    }
+  ),
+  estateCaseSalesTax: createObjectMapping(
+    () => profile.estate.case.salesTax,
+    (value: number) => {
+      profile.estate.case.salesTax = value;
+    }
+  ),
+  estateCaseApplyResidentTax: createObjectMapping(
+    () => profile.estate.case.applyResidentTax,
+    (value: boolean) => {
+      profile.estate.case.applyResidentTax = value;
+    }
+  ),
+  estateCaseSpH19: createObjectMapping(
+    () => profile.estate.case.spH19,
+    (value: boolean) => {
+      profile.estate.case.spH19 = value;
+    }
+  ),
+  estateCaseSpR1: createObjectMapping(
+    () => profile.estate.case.spR1,
+    (value: boolean) => {
+      profile.estate.case.spR1 = value;
+    }
+  ),
+  estateCaseCovid19: createObjectMapping(
+    () => profile.estate.case.covid19,
+    (value: boolean) => {
+      profile.estate.case.covid19 = value;
+    }
+  ),
+  estateCaseSpR3: createObjectMapping(
+    () => profile.estate.case.spR3,
+    (value: boolean) => {
+      profile.estate.case.spR3 = value;
+    }
+  ),
+  estateCaseSmall: createObjectMapping(
+    () => profile.estate.case.small,
+    (value: boolean) => {
+      profile.estate.case.small = value;
+    }
+  ),
+  estateCaseParenting: createObjectMapping(
+    () => profile.estate.case.parenting,
+    (value: boolean) => {
+      profile.estate.case.parenting = value;
+    }
+  ),
+  estateCaseSpR6: createObjectMapping(
+    () => profile.estate.case.spR6,
+    (value: boolean) => {
+      profile.estate.case.spR6 = value;
+    }
+  ),
+  */
+};
+
+const profileElements: HtmlElements = Object.keys(profileMapping).reduce((elements, key) => {
+  elements[key] = {
+    element: getElement(key),
     value: (newValue?: Value) => {
       if (newValue !== undefined) {
-        if (typeof newValue === 'number') {
-          profile.applicant.year = newValue;
-        }
+        return profileMapping[key](newValue);
       }
-      return profile.applicant.year;
+      // newValue が undefined の場合、現在の値を返す
+      return profileMapping[key](null);
     },
-  },
-};
+  };
+  return elements;
+}, {} as HtmlElements);
+
 /*
   applicantSpouse: { element: getElement('spouseCheck'), value: () => profile.applicant.attributes.hasSpouse },
   applicantIncomeSalary: { element: getElement('incomeSalary'), value: () => profile.applicant.income.salary },
@@ -260,38 +591,36 @@ const profileMapping: { [key: string]: (value: Value) => void } = {
 };
 */
 
-type HtmlElement = {
-  element: HTMLInputElement | null;
-  value: (newValue?: number | string | boolean | Currency | null) => number | string | boolean | Currency | null;
-};
-
-type HtmlElements = {
-  [key: string]: HtmlElement;
-};
-
-type Value = number | string | boolean | Currency | null;
-
+/*
 function isCurrency(value: Value): value is Currency {
   return typeof value === 'object' && value !== null && 'amount' in value;
 }
+  */
 
 export function updateValue(element: HtmlElement) {
-  const newValue = element.element?.value || '';
+  let newValue: Value = element.element?.value || '';
+  if (element.element?.type === 'checkbox') {
+    newValue = element.element.checked;
+  }
   const value = element.value();
+  console.log('value:', value);
+  console.log(typeof value);
 
-  if (typeof value === 'number') {
+  if (typeof value === 'number' && typeof newValue === 'string') {
+    console.log('update number');
     const parsedValue = parseInt(newValue, 10);
     if (!isNaN(parsedValue)) {
       element.value(parsedValue);
     }
-  } else if (isCurrency(value)) {
-    const parsedValue = parseInt(newValue, 10);
-    if (!isNaN(parsedValue)) {
-      element.value({ amount: parsedValue });
-    }
-  } else if (typeof value === 'boolean') {
-    element.value(newValue === 'true');
+  } else if (typeof value === 'object' && typeof newValue === 'string') {
+    console.log('update Currency');
+    const parsedValue = setCurrency(newValue);
+    element.value(parsedValue);
+  } else if (typeof value === 'boolean' && typeof newValue === 'boolean') {
+    console.log('update boolean');
+    element.value(newValue === true);
   } else if (typeof value === 'string') {
+    console.log('update string');
     element.value(newValue || '');
   }
 }
@@ -301,7 +630,10 @@ export function getHtmlElements(elements: HtmlElements) {
     if (elements[key] && typeof elements[key] === 'object') {
       const element = elements[key] as HtmlElement;
       if ('element' in element && 'value' in element) {
-        const newValue = element.element?.value || null;
+        let newValue: Value = element.element?.value || '';
+        if (element.element?.type === 'checkbox') {
+          newValue = element.element.checked;
+        }
         console.log('key:', key);
         console.log('value:', element.value());
         console.log('newValue:', newValue);

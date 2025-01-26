@@ -17,6 +17,7 @@ export function initialize() {
   getTaxYear();
   getProfile();
   //getDeductionInput();
+  allSpecialEvents();
   getTaxable();
   calcDeductions();
   calcTax();
@@ -36,8 +37,8 @@ export function refresh() {
 }
 
 const taxYearIds = ['taxYear'];
-const yearIds = ['taxYear', 'birthYear', 'birthYearS', 'moveInYear', 'renovYear'];
-const hasSpouseIds = ['spouseCheck'];
+const yearIds = ['taxYear', 'applicantBirthYear', 'spouseBirthYear', 'moveInYear', 'renovYear'];
+const hasSpouseIds = ['applicantSpouse'];
 const loanSelectIDs = ['LoanSelect'];
 const incomeIds = ['incomeSalary', 'taxableOther'];
 const dependentIds = [
@@ -51,7 +52,15 @@ const dependentIds = [
   'dependentDisabilityO',
 ];
 
+function allSpecialEvents() {
+  const allIds = [...taxYearIds, ...yearIds, ...hasSpouseIds, ...loanSelectIDs, ...incomeIds, ...dependentIds];
+  allIds.forEach((id) => {
+    specialEvents(id);
+  });
+}
+
 export function specialEvents(id: string) {
+  console.log(`Special events: ${id}`);
   if (taxYearIds.includes(id)) {
     updateJapaneseYear();
   }

@@ -148,8 +148,8 @@
         <div class="visible" id="applicant">
           <label>⚫︎申告者</label>
           <label>生年</label>
-          <input id="birthYear" type="number" class="year" value="2000" min="1901" max="2100" step="1" />
-          <label><input id="spouseCheck" type="checkbox" />配偶者有り</label>
+          <input id="applicantBirthYear" type="number" class="year" value="2000" min="1901" max="2100" step="1" />
+          <label><input id="applicantSpouse" type="checkbox" />配偶者有り</label>
           <select id="LoanSelect">
             <option value="">住宅借入金</option>
             <option value="None">住宅ローン無し</option>
@@ -169,13 +169,13 @@
             <tbody id="incomeBody">
               <tr>
                 <td>収入</td>
-                <td><input id="incomeSalary" type="text" class="just-num currency-input" value="0" /></td>
+                <td><input id="applicantIncomeSalary" type="text" class="just-num currency-input" value="0" /></td>
                 <td></td>
               </tr>
               <tr>
                 <td>所得</td>
-                <td id="taxableSalary" class="currency-input">0</td>
-                <td><input id="taxableOther" type="text" class="just-num currency-input" value="0" /></td>
+                <td id="applicantTaxableSalary" class="currency-input">0</td>
+                <td><input id="applicantTaxableOther" type="text" class="just-num currency-input" value="0" /></td>
               </tr>
             </tbody>
           </table>
@@ -203,7 +203,7 @@
         <div class="hidden" id="spouse">
           <label>⚫︎配偶者</label>
           <label>生年</label>
-          <input id="birthYearS" type="number" class="year" value="2000" min="1901" max="2100" step="1" />
+          <input id="spouseBirthYear" type="number" class="year" value="2000" min="1901" max="2100" step="1" />
           <br />
           <table id="incomeTableS">
             <thead id="incomeHeadS">
