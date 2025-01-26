@@ -6,7 +6,7 @@ import {
   handleIncomeChange,
   handleDependentChange,
 } from './events.js';
-import { getTaxYear, getProfile, getDeductionInput, showTax } from './io.js';
+import { getTaxYear, getProfile, /*getDeductionInput,*/ showTax } from './io.js';
 import { getTaxable } from './taxable.js';
 import { calcDeductions } from './deductions.js';
 import { calcTax } from './tax.js';
@@ -16,7 +16,7 @@ export function initialize() {
   updateJapaneseYear();
   getTaxYear();
   getProfile();
-  getDeductionInput();
+  //getDeductionInput();
   getTaxable();
   calcDeductions();
   calcTax();
@@ -28,7 +28,7 @@ export function refresh() {
   updateJapaneseYear();
   getTaxYear();
   getProfile();
-  getDeductionInput();
+  //getDeductionInput();
   getTaxable();
   calcDeductions();
   calcTax();

@@ -1,14 +1,6 @@
-type Profile = {
-  applicant: {
-    year: number;
-  };
-};
-
-const profile: Profile = {
-  applicant: {
-    year: 0,
-  },
-};
+//import { get } from 'jquery';
+//import { ProfileType, DeductionInputType, TaxType, Currency } from './objects.js';
+import { profile } from './objects';
 
 const getElement = (id: string): HTMLInputElement | null => document.getElementById(id) as HTMLInputElement | null;
 
@@ -25,11 +17,11 @@ type HtmlElements = {
   [key: string]: HtmlElement;
 };
 
-function updateProfileValue(element: HtmlElement) {
+export function updateProfileValue(element: HtmlElement) {
   const newValue = element.element?.value || '';
   const parsedValue = parseInt(newValue, 10);
   if (!isNaN(parsedValue)) {
-    profile.applicant.year = parsedValue;
+    element.value = () => parsedValue;
   }
 }
 
@@ -44,7 +36,8 @@ function getHtmlElements(elements: HtmlElements) {
   }
 }
 
-// profileElements の値を更新し、profile オブジェクトに反映
-getHtmlElements(profileElements);
-
-console.log(profile);
+export function getProfile() {
+  getHtmlElements(profileElements);
+  console.log(profile);
+  return profile;
+}

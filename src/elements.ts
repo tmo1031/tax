@@ -1,18 +1,24 @@
 //import { get } from 'jquery';
-import { profile, deductionInput, incomeDeductions, personalDeductions, taxCredits, tax } from './objects.js';
-import { Currency } from './objects.js';
-//import { ProfileType, DeductionInputType, TaxType, Currency } from './objects.js';
+import { profile /* deductionInput , incomeDeductions, personalDeductions, taxCredits, tax */ } from './objects';
+import { Currency } from './objects';
+//import { ProfileType, DeductionInputType, TaxType, Currency ,} from './objects.js';
 
 const getElement = (id: string): HTMLInputElement | null => document.getElementById(id) as HTMLInputElement | null;
 
-export const profileElements = {
+export const profileElements: HtmlElements = {
   applicantBirthYear: {
     element: getElement('birthYear'),
-    value: (newValue?: number) => {
-      if (newValue !== undefined) profile.applicant.year = newValue;
+    value: (newValue?: Value) => {
+      if (newValue !== undefined) {
+        if (typeof newValue === 'number') {
+          profile.applicant.year = newValue;
+        }
+      }
       return profile.applicant.year;
     },
   },
+};
+/*
   applicantSpouse: { element: getElement('spouseCheck'), value: () => profile.applicant.attributes.hasSpouse },
   applicantIncomeSalary: { element: getElement('incomeSalary'), value: () => profile.applicant.income.salary },
   applicantIncomeOther: { element: getElement('incomeOther'), value: () => profile.applicant.income.other },
@@ -240,33 +246,53 @@ export const taxElements = {
   taxRefundJ: { element: getElement('refundJ'), value: () => tax.refund.residentTax },
 };
 
+const profileMapping: { [key: string]: (value: Value) => void } = {
+  birthYear: (value) => {
+    if (typeof value === 'number') {
+      profile.applicant.year = value;
+    }
+  },
+  birthYearS: (value) => {
+    if (typeof value === 'number') {
+      profile.spouse.year = value;
+    }
+  },
+};
+*/
+
 type HtmlElement = {
   element: HTMLInputElement | null;
-  value: () => number | string | boolean | Currency | null;
+  value: (newValue?: number | string | boolean | Currency | null) => number | string | boolean | Currency | null;
+};
+
+type HtmlElements = {
+  [key: string]: HtmlElement;
 };
 
 type Value = number | string | boolean | Currency | null;
-
-type HtmlElements = {
-  [key: string]: HtmlElement | HtmlElements;
-};
 
 function isCurrency(value: Value): value is Currency {
   return typeof value === 'object' && value !== null && 'amount' in value;
 }
 
-function updateValue(element: HtmlElement, newValue: string | null) {
+export function updateValue(element: HtmlElement) {
+  const newValue = element.element?.value || '';
   const value = element.value();
+
   if (typeof value === 'number') {
-    const parsedValue = parseInt(newValue as string, 10);
-    element.value = () => (isNaN(parsedValue) ? 0 : parsedValue);
+    const parsedValue = parseInt(newValue, 10);
+    if (!isNaN(parsedValue)) {
+      element.value(parsedValue);
+    }
   } else if (isCurrency(value)) {
-    const parsedValue = parseInt(newValue as string, 10);
-    value.amount = isNaN(parsedValue) ? 0 : parsedValue;
+    const parsedValue = parseInt(newValue, 10);
+    if (!isNaN(parsedValue)) {
+      element.value({ amount: parsedValue });
+    }
   } else if (typeof value === 'boolean') {
-    element.value = () => newValue === 'true';
+    element.value(newValue === 'true');
   } else if (typeof value === 'string') {
-    element.value = () => newValue || '';
+    element.value(newValue || '');
   }
 }
 
@@ -280,7 +306,7 @@ export function getHtmlElements(elements: HtmlElements) {
         console.log('value:', element.value());
         console.log('newValue:', newValue);
         console.log('element:', element);
-        updateValue(element, newValue);
+        updateValue(element);
       }
     }
   }
@@ -311,12 +337,12 @@ export function getProfile() {
   console.log('profile:', profile);
 }
 
+/* 
 export function getDeductionInput() {
   getHtmlElements(deductionInputElements);
   console.log('deductionInput:', deductionInput);
 }
 
-/* 
 export function getTax() {
   getHtmlElements(taxElements);
 }
