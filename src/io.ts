@@ -1,6 +1,6 @@
 import { system } from './objects.js';
-//import { getProfile, getDeductionInput, taxElements, setProfile } from './elements.js';
-import { getProfile /*getDeductionInput, taxElements*/ } from './elements.js';
+import { getProfile, getDeductionInput /*, taxElements*/ } from './elements.js';
+import { showProfile, showTax } from './elements.js';
 
 export function getTaxYear() {
   const taxYearInput = document.getElementById('taxYear') as HTMLInputElement | null;
@@ -13,7 +13,7 @@ export function getTaxYear() {
 }
 
 export { getProfile };
-//export { getDeductionInput };
+export { getDeductionInput };
 
 export function updateProfile() {
   //setProfile();
@@ -32,15 +32,6 @@ export function updateTax() {
   return;
 }
 
-export function showTax() {
-  /*
-  Object.values(taxElements).forEach((category) => {
-    Object.values(category).forEach(({ element, value }) => {
-      if (element) {
-        element.textContent = `${value}`;
-      }
-    });
-  });
-  */
-  return;
-}
+export { showProfile };
+
+export { showTax };

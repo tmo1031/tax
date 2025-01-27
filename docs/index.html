@@ -15,10 +15,6 @@
 
     <!-- Custom scripts -->
     <script type="module" src="js/setEventListener.js"></script>
-    <!-- 
-    <script type="module" src="js/main.js"></script>
-    <script type="module" src="js/calc.js"></script>
-    -->
 
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -174,7 +170,7 @@
               </tr>
               <tr>
                 <td>所得</td>
-                <td id="applicantTaxableSalary" class="currency-input">0</td>
+                <td><label id="applicantTaxableSalary" class="currency-input">0</label></td>
                 <td><input id="applicantTaxableOther" type="text" class="just-num currency-input" value="0" /></td>
               </tr>
             </tbody>
@@ -183,20 +179,20 @@
         <div class="visible" id="attributes">
           <label>⚫︎本人該当区分</label>
           <br />
-          <label><input id="minors" type="checkbox" />未成年者</label>
-          <select id="disability">
+          <label><input id="applicantAttributesMinors" type="checkbox" />未成年者</label>
+          <select id="applicantAttributesDisability">
             <option value="0">障害有無</option>
             <option value="0">障害無し</option>
             <option value="1">障害者(他)</option>
             <option value="2">障害者(特別)</option>
           </select>
-          <select id="single">
+          <select id="applicantAttributesSingleP">
             <option value="0">寡婦(夫)該当</option>
             <option value="0">該当無し</option>
             <option value="1">寡婦(夫)</option>
             <option value="2" class="hidden">ひとり親</option>
           </select>
-          <label><input id="student" type="checkbox" />勤労学生</label>
+          <label><input id="applicantAttributesStudent" type="checkbox" />勤労学生</label>
           <br />
           <br />
         </div>
@@ -216,13 +212,13 @@
             <tbody id="incomeBodyS">
               <tr>
                 <td>収入</td>
-                <td><input id="incomeSalaryS" type="text" class="just-num currency-input" value="0" /></td>
+                <td><input id="spouseIncomeSalary" type="text" class="just-num currency-input" value="0" /></td>
                 <td></td>
               </tr>
               <tr>
                 <td>所得</td>
-                <td id="taxableSalaryS" class="currency-input">0</td>
-                <td><input id="taxableOtherS" type="text" class="just-num currency-input" value="0" /></td>
+                <td><label id="spouseTaxableSalary" class="currency-input">0</label></td>
+                <td><input id="spouseTaxableOther" type="text" class="just-num currency-input" value="0" /></td>
               </tr>
             </tbody>
           </table>
@@ -234,7 +230,7 @@
           <label>特定</label>
           <input id="dependentSpecified" type="number" size="4" value="0" min="0" max="10" step="1" />
           <label>老人(同居)</label>
-          <input id="dependentElderlyLT" type="number" size="4 " value="0" min="0" max="10" step="1" />
+          <input id="dependentElderlyLt" type="number" size="4 " value="0" min="0" max="10" step="1" />
           <label>老人</label>
           <input id="dependentElderly" type="number" size="4" value="0" min="0" max="10" step="1" />
           <label>16歳未満</label>
@@ -243,7 +239,7 @@
           <input id="dependentOther" type="number" size="4" value="0" min="0" max="10" step="1" />
           <br />
           <label>障害者(同居)</label>
-          <input id="dependentDisabilityLT" type="number" size="4" value="0" min="0" max="10" step="1" />
+          <input id="dependentDisabilityLt" type="number" size="4" value="0" min="0" max="10" step="1" />
           <label>障害者(特別)</label>
           <input id="dependentDisabilityP" type="number" size="4" value="0" min="0" max="10" step="1" />
           <label>障害者(他)</label>
@@ -254,8 +250,8 @@
         <div class="hidden" id="house">
           <label>⚫︎住宅</label>
           <label>入居年</label>
-          <input id="moveInYear" type="number" class="year" value="2000" min="1999" max="2100" step="1" />
-          <input id="moveInMonth" type="number" class="month" value="1" min="1" max="12" step="1" />
+          <input id="estateHouseYear" type="number" class="year" value="2000" min="1999" max="2100" step="1" />
+          <input id="estateHouseMonth" type="number" class="month" value="1" min="1" max="12" step="1" />
           <label>月</label>
           <br />
           <table id="houseTable">
@@ -270,15 +266,15 @@
             <tbody id="houseBody">
               <tr>
                 <td>家屋</td>
-                <td><input id="housePrice" type="text" class="just-num currency-input" value="0" /></td>
-                <td><input id="houseResident" type="number" class="percent" value="100" /></td>
-                <td><input id="houseDebt" type="number" class="percent" value="100" /></td>
+                <td><input id="estateHousePrice" type="text" class="just-num currency-input" value="0" /></td>
+                <td><input id="estateHouseResident" type="number" class="percent" value="100" /></td>
+                <td><input id="estateHouseDebt" type="number" class="percent" value="100" /></td>
               </tr>
               <tr>
                 <td>土地</td>
-                <td><input id="landPrice" type="text" class="just-num currency-input" value="0" /></td>
-                <td><input id="landResident" type="number" class="percent" value="100" /></td>
-                <td><input id="landDebt" type="number" class="percent" value="100" /></td>
+                <td><input id="estateLandPrice" type="text" class="just-num currency-input" value="0" /></td>
+                <td><input id="estateLandResident" type="number" class="percent" value="100" /></td>
+                <td><input id="estateLandDebt" type="number" class="percent" value="100" /></td>
               </tr>
             </tbody>
           </table>
@@ -287,8 +283,8 @@
         <div class="hidden" id="renovation">
           <label>⚫︎増改築</label>
           <label>入居年</label>
-          <input id="renovYear" type="number" class="year" value="2000" min="1999" max="2100" step="1" />
-          <input id="renovMonth" type="number" class="month" value="1" min="1" max="12" step="1" />
+          <input id="estateRenovationYear" type="number" class="year" value="2000" min="1999" max="2100" step="1" />
+          <input id="estateRenovationMonth" type="number" class="month" value="1" min="1" max="12" step="1" />
           <label>月</label>
           <br />
           <table id="renovTable">
@@ -304,10 +300,10 @@
             <tbody id="renovBody">
               <tr>
                 <td>増改築</td>
-                <td><input id="renovPrice" type="text" class="just-num currency-input" value="0" /></td>
-                <td><input id="renovPriceSp" type="text" class="just-num currency-input" value="0" /></td>
-                <td><input id="renovResident" type="number" class="percent" value="100" /></td>
-                <td><input id="renovDebt" type="number" class="percent" value="100" /></td>
+                <td><input id="estateRenovationPrice" type="text" class="just-num currency-input" value="0" /></td>
+                <td><input id="estateRenovationPriceSp" type="text" class="just-num currency-input" value="0" /></td>
+                <td><input id="estateRenovationResident" type="number" class="percent" value="100" /></td>
+                <td><input id="estateRenovationDebt" type="number" class="percent" value="100" /></td>
               </tr>
             </tbody>
           </table>
@@ -323,12 +319,12 @@
             </thead>
             <tbody id="loanBody">
               <tr>
-                <td><input id="loanBalance" type="text" class="just-num currency-input" value="0" /></td>
+                <td><input id="estateLoanBalance" type="text" class="just-num currency-input" value="0" /></td>
               </tr>
             </tbody>
           </table>
           <br />
-          <select id="quality">
+          <select id="estateCaseQuality">
             <option value="null">認定住宅等</option>
             <option value="0">一般住宅</option>
             <option value="1">省エネ基準適合住宅</option>
@@ -336,35 +332,37 @@
             <option value="3">認定低炭素住宅</option>
             <option value="4">認定長期優良住宅</option>
           </select>
-          <select id="salesTax">
+          <select id="estateCaseSalesTax">
             <option value="null">消費税率</option>
             <option value="5">5%</option>
             <option value="8">8%</option>
             <option value="10">10%</option>
           </select>
           <div class="hidden" id="applyResidentTaxDiv">
-            <label><input id="applyResidentTax" type="checkbox" />市区町村への控除申告をする(H11-18入居)</label>
+            <label
+              ><input id="estateCaseApplyResidentTax" type="checkbox" />市区町村への控除申告をする(H11-18入居)</label
+            >
           </div>
           <div class="hidden" id="spH19Div">
-            <label><input id="spH19" type="checkbox" />特例適用(H19,20)</label>
+            <label><input id="estateCaseSpH19" type="checkbox" />特例適用(H19,20)</label>
           </div>
           <div class="hidden" id="spR1Div">
-            <label><input id="spR1" type="checkbox" />特別特定取得(R1,2)</label>
+            <label><input id="estateCaseSpR1" type="checkbox" />特別特定取得(R1,2)</label>
           </div>
           <div class="hidden" id="covid19Div">
-            <label><input id="covid19" type="checkbox" />コロナによる入居遅れの救済(R2,3)</label>
+            <label><input id="estateCaseCovid19" type="checkbox" />コロナによる入居遅れの救済(R2,3)</label>
           </div>
           <div class="hidden" id="spR3Div">
-            <label><input id="spR3" type="checkbox" />特別特例取得(R2,3)</label>
+            <label><input id="estateCaseSpR3" type="checkbox" />特別特例取得(R2,3)</label>
           </div>
           <div class="hidden" id="smallDiv">
-            <label><input id="small" type="checkbox" />小規模居住用家屋</label>
+            <label><input id="estateCaseSmall" type="checkbox" />小規模居住用家屋</label>
           </div>
           <div class="hidden" id="parentingDiv">
-            <label><input id="parenting" type="checkbox" />子育て世帯(R6)</label>
+            <label><input id="estateCaseParenting" type="checkbox" />子育て世帯(R6)</label>
           </div>
           <div class="hidden" id="spR6Div">
-            <label><input id="spR6" type="checkbox" />その他住宅の特例(R6)</label>
+            <label><input id="estateCaseSpR6" type="checkbox" />その他住宅の特例(R6)</label>
           </div>
         </div>
       </div>
@@ -382,8 +380,8 @@
           </thead>
           <tbody id="lossBody">
             <tr>
-              <td><input id="casualtyLoss" type="text" class="just-num currency-input" value="0" /></td>
-              <td><input id="disasterReduction" type="text" class="just-num currency-input" value="0" /></td>
+              <td><input id="lossCasualtyLoss" type="text" class="just-num currency-input" value="0" /></td>
+              <td><input id="lossDisasterReduction" type="text" class="just-num currency-input" value="0" /></td>
             </tr>
           </tbody>
         </table>
@@ -399,7 +397,7 @@
           <tbody id="socialBody">
             <tr>
               <td><input id="socialInsurance" type="text" class="just-num currency-input" value="0" /></td>
-              <td><input id="mutualAid" type="text" class="just-num currency-input" value="0" /></td>
+              <td><input id="socialMutualAid" type="text" class="just-num currency-input" value="0" /></td>
             </tr>
           </tbody>
         </table>
@@ -419,13 +417,13 @@
           </thead>
           <tbody id="insuranceBody">
             <tr>
-              <td><input id="lifeInsuranceNew" type="text" class="just-num currency-input" value="0" /></td>
-              <td><input id="lifeInsuranceOld" type="text" class="just-num currency-input" value="0" /></td>
-              <td><input id="healthInsurance" type="text" class="just-num currency-input" value="0" /></td>
-              <td><input id="annuityNew" type="text" class="just-num currency-input" value="0" /></td>
-              <td><input id="annuityOld" type="text" class="just-num currency-input" value="0" /></td>
-              <td><input id="quakeInsuranceOld" type="text" class="just-num currency-input" value="0" /></td>
-              <td><input id="quakeInsuranceNew" type="text" class="just-num currency-input" value="0" /></td>
+              <td><input id="insuranceLifeNew" type="text" class="just-num currency-input" value="0" /></td>
+              <td><input id="insuranceLifeOld" type="text" class="just-num currency-input" value="0" /></td>
+              <td><input id="insuranceHealth" type="text" class="just-num currency-input" value="0" /></td>
+              <td><input id="insuranceAnnuityNew" type="text" class="just-num currency-input" value="0" /></td>
+              <td><input id="insuranceAnnuityOld" type="text" class="just-num currency-input" value="0" /></td>
+              <td><input id="insuranceQuakeInsuranceOld" type="text" class="just-num currency-input" value="0" /></td>
+              <td><input id="insuranceQuakeInsuranceNew" type="text" class="just-num currency-input" value="0" /></td>
             </tr>
           </tbody>
         </table>
@@ -445,10 +443,8 @@
           </thead>
           <tbody id="housingBody">
             <tr>
-              <td><input id="loans" type="text" name="Housing" class="just-num currency-input" value="0" /></td>
-              <td>
-                <input id="improvementHouse" type="text" name="Housing" class="just-num currency-input" value="0" />
-              </td>
+              <td><input id="housingLoan" type="text" class="just-num currency-input" value="0" /></td>
+              <td><input id="housingImprovementHouse" type="text" class="just-num currency-input" value="0" /></td>
             </tr>
           </tbody>
         </table>
@@ -467,18 +463,18 @@
           </thead>
           <tbody id="donationsBody">
             <tr>
-              <td><input id="hometownTax" type="text" class="just-num currency-input" value="0" /></td>
-              <td><input id="communityChest" type="text" class="just-num currency-input" value="0" /></td>
-              <td><input id="donationByPref" type="text" class="just-num currency-input" value="0" /></td>
-              <td><input id="donationByCity" type="text" class="just-num currency-input" value="0" /></td>
-              <td><input id="donationOther" type="text" class="just-num currency-input" value="0" /></td>
-              <td><input id="contributions" type="text" class="just-num currency-input" value="0" /></td>
+              <td><input id="donationsHometownTax" type="text" class="just-num currency-input" value="0" /></td>
+              <td><input id="donationsCommunityChest" type="text" class="just-num currency-input" value="0" /></td>
+              <td><input id="donationsDonationByPref" type="text" class="just-num currency-input" value="0" /></td>
+              <td><input id="donationsDonationByCity" type="text" class="just-num currency-input" value="0" /></td>
+              <td><input id="donationsDonationOther" type="text" class="just-num currency-input" value="0" /></td>
+              <td><input id="donationsContributions" type="text" class="just-num currency-input" value="0" /></td>
             </tr>
           </tbody>
         </table>
-        <label><input id="applyOneStop" type="checkbox" />ワンストップ特例の適用を受ける</label>
+        <label><input id="donationsApplyOneStop" type="checkbox" />ワンストップ特例の適用を受ける</label>
         <br />
-        <label><input id="applyContributions" type="checkbox" />政党等寄附金特別控除制度の適用を受ける</label>
+        <label><input id="donationsApplyContributions" type="checkbox" />政党等寄附金特別控除制度の適用を受ける</label>
         <br />
         <br />
         <label>⚫︎源泉徴収額</label>
@@ -500,7 +496,7 @@
               <td><input id="withholdingStockJ" type="text" class="just-num currency-input" value="0" /></td>
               <td><input id="withholdingDividendS" type="text" class="just-num currency-input" value="0" /></td>
               <td><input id="withholdingDividendJ" type="text" class="just-num currency-input" value="0" /></td>
-              <td><input id="nonResidents" type="text" class="just-num currency-input" value="0" /></td>
+              <td><input id="withholdingNonResidents" type="text" class="just-num currency-input" value="0" /></td>
             </tr>
           </tbody>
         </table>
@@ -516,29 +512,29 @@
           </thead>
           <tbody id="otherBody">
             <tr>
-              <td><input id="dividend" type="text" class="just-num currency-input" value="0" /></td>
-              <td><input id="unlistedStocks" type="text" class="just-num currency-input" value="0" /></td>
-              <td><input id="foreignTax" type="text" class="just-num currency-input" value="0" /></td>
+              <td><input id="otherDividend" type="text" class="just-num currency-input" value="0" /></td>
+              <td><input id="otherUnlistedStocks" type="text" class="just-num currency-input" value="0" /></td>
+              <td><input id="otherForeignTax" type="text" class="just-num currency-input" value="0" /></td>
             </tr>
           </tbody>
         </table>
         <br />
         <label>⚫︎確定申告の有無</label>
         <br />
-        <input type="radio" name="doTaxReturn" value="No" checked /> 確定申告不要
+        <input type="radio" name="taxReturnDoTaxReturn" value="No" checked /> 確定申告不要
         ※ふるさと納税時はワンストップ特例申請必要
         <br />
-        <input type="radio" name="doTaxReturn" value="Yes" /> 確定申告必要
+        <input type="radio" name="taxReturnDoTaxReturn" value="Yes" /> 確定申告必要
         <br />
         <label>確定申告の方法 ※令和5年分以降は所得税と住民税の一致が必要</label>
         <br />
-        <select id="methodS" name="Method">
+        <select id="taxReturnMethodS" name="Method">
           <option value="">所得税</option>
           <option value="Separate">申告分離課税</option>
           <option value="Comprehensive">総合課税</option>
           <option value="None">申告不要</option>
         </select>
-        <select id="methodJ" name="Method">
+        <select id="taxReturnMethodJ" name="Method">
           <option value="">住民税</option>
           <option value="Separate">申告分離課税</option>
           <option value="Comprehensive">総合課税</option>
@@ -557,58 +553,58 @@
           <tbody id="incomeDeductionsBody">
             <tr>
               <td>雑損</td>
-              <td id="casualtyLossS" class="currency-input">0</td>
-              <td id="casualtyLossJ" class="currency-input">0</td>
+              <td><label id="casualtyLossS" class="currency-input">0</label></td>
+              <td><label id="casualtyLossJ" class="currency-input">0</label></td>
             </tr>
             <tr>
               <td>医療費</td>
-              <td id="medicalS" class="currency-input">0</td>
-              <td id="medicalJ" class="currency-input">0</td>
+              <td><label id="medicalS" class="currency-input">0</label></td>
+              <td><label id="medicalJ" class="currency-input">0</label></td>
             </tr>
             <tr>
               <td>社会保険料</td>
-              <td id="socialS" class="currency-input">0</td>
-              <td id="socialJ" class="currency-input">0</td>
+              <td><label id="socialS" class="currency-input">0</label></td>
+              <td><label id="socialJ" class="currency-input">0</label></td>
             </tr>
             <tr>
               <td>小規模企業共済等掛金</td>
-              <td id="pensionS" class="currency-input">0</td>
-              <td id="pensionJ" class="currency-input">0</td>
+              <td><label id="pensionS" class="currency-input">0</label></td>
+              <td><label id="pensionJ" class="currency-input">0</label></td>
             </tr>
             <tr>
               <td>生命保険料</td>
-              <td id="insuranceLS" class="currency-input">0</td>
-              <td id="insuranceLJ" class="currency-input">0</td>
+              <td><label id="insuranceLS" class="currency-input">0</label></td>
+              <td><label id="insuranceLJ" class="currency-input">0</label></td>
             </tr>
             <tr>
               <td>地震保険料</td>
-              <td id="insuranceES" class="currency-input">0</td>
-              <td id="insuranceEJ" class="currency-input">0</td>
+              <td><label id="insuranceES" class="currency-input">0</label></td>
+              <td><label id="insuranceEJ" class="currency-input">0</label></td>
             </tr>
             <tr>
               <td>寄附金</td>
-              <td id="donationsS" class="currency-input">0</td>
+              <td><label id="donationsS" class="currency-input">0</label></td>
               <td></td>
             </tr>
             <tr>
               <td>障・寡・ひ・勤</td>
-              <td id="personalS" class="currency-input">0</td>
-              <td id="personalJ" class="currency-input">0</td>
+              <td><label id="personalS" class="currency-input">0</label></td>
+              <td><label id="personalJ" class="currency-input">0</label></td>
             </tr>
             <tr>
               <td>配偶者(含む特別)</td>
-              <td id="spouseS" class="currency-input">0</td>
-              <td id="spouseJ" class="currency-input">0</td>
+              <td><label id="spouseS" class="currency-input">0</label></td>
+              <td><label id="spouseJ" class="currency-input">0</label></td>
             </tr>
             <tr>
               <td>扶養</td>
-              <td id="dependentS" class="currency-input">0</td>
-              <td id="dependentJ" class="currency-input">0</td>
+              <td><label id="dependentS" class="currency-input">0</label></td>
+              <td><label id="dependentJ" class="currency-input">0</label></td>
             </tr>
             <tr>
               <td>基礎</td>
-              <td id="basicS" class="currency-input">0</td>
-              <td id="basicJ" class="currency-input">0</td>
+              <td><label id="basicS" class="currency-input">0</label></td>
+              <td><label id="basicJ" class="currency-input">0</label></td>
             </tr>
           </tbody>
         </table>
@@ -624,48 +620,48 @@
           <tbody id="taxCreditsBody">
             <tr>
               <td>配当控除</td>
-              <td id="dividendS" class="currency-input">0</td>
-              <td id="dividendJ" class="currency-input">0</td>
+              <td><label id="dividendS" class="currency-input">0</label></td>
+              <td><label id="dividendJ" class="currency-input">0</label></td>
             </tr>
             <tr>
               <td>住宅借入金等</td>
-              <td id="loansS" class="currency-input">0</td>
-              <td id="loansJ" class="currency-input">0</td>
+              <td><label id="loansS" class="currency-input">0</label></td>
+              <td><label id="loansJ" class="currency-input">0</label></td>
             </tr>
             <tr>
               <td>政党等寄附金等</td>
-              <td id="donationsCreditS" class="currency-input">0</td>
+              <td><label id="donationsCreditS" class="currency-input">0</label></td>
               <td></td>
             </tr>
             <tr>
               <td>寄附金税額控除</td>
               <td></td>
-              <td id="donationsCreditJ" class="currency-input">0</td>
+              <td><label id="donationsCreditJ" class="currency-input">0</label></td>
             </tr>
             <tr>
               <td>住宅耐震改修特別控除</td>
-              <td id="improvementHouseS" class="currency-input">0</td>
+              <td><label id="improvementHouseS" class="currency-input">0</label></td>
               <td></td>
             </tr>
             <tr>
               <td>災害減免</td>
-              <td id="disasterReductionS" class="currency-input">0</td>
+              <td><label id="disasterReductionS" class="currency-input">0</label></td>
               <td></td>
             </tr>
             <tr>
               <td>外国税額</td>
-              <td id="foreignTaxS" class="currency-input">0</td>
-              <td id="foreignTaxJ" class="currency-input">0</td>
+              <td><label id="foreignTaxS" class="currency-input">0</label></td>
+              <td><label id="foreignTaxJ" class="currency-input">0</label></td>
             </tr>
             <tr>
               <td>配当割税額控除</td>
               <td></td>
-              <td id="withholdingDividendCreditJ" class="currency-input">0</td>
+              <td><label id="withholdingDividendCreditJ" class="currency-input">0</label></td>
             </tr>
             <tr>
               <td>株式等譲渡所得割額控除</td>
               <td></td>
-              <td id="withholdingStockCreditJ" class="currency-input">0</td>
+              <td><label id="withholdingStockCreditJ" class="currency-input">0</label></td>
             </tr>
           </tbody>
         </table>
@@ -685,62 +681,62 @@
           <tbody id="totalBody">
             <tr>
               <td>総所得</td>
-              <td id="incomeS" class="currency-input">0</td>
-              <td id="incomeJ" class="currency-input">0</td>
+              <td><label id="incomeIncomeTax" class="currency-input">0</label></td>
+              <td><label id="incomeResidentTax" class="currency-input">0</label></td>
             </tr>
             <tr>
               <td>所得控除計</td>
-              <td id="deductionS" class="currency-input">0</td>
-              <td id="deductionJ" class="currency-input">0</td>
+              <td><label id="deductionIncomeTax" class="currency-input">0</label></td>
+              <td><label id="deductionResidentTax" class="currency-input">0</label></td>
             </tr>
             <tr>
               <td>課税標準</td>
-              <td id="taxableS" class="currency-input">0</td>
-              <td id="taxableJ" class="currency-input">0</td>
+              <td><label id="taxableIncomeTax" class="currency-input">0</label></td>
+              <td><label id="taxableResidentTax" class="currency-input">0</label></td>
             </tr>
             <tr>
               <td>控除前税額</td>
-              <td id="taxPreS" class="currency-input">0</td>
-              <td id="taxPreJ" class="currency-input">0</td>
-              <td id="taxPreCity" class="currency-input">0</td>
-              <td id="taxPrePref" class="currency-input">0</td>
+              <td><label id="taxPreIncomeTax" class="currency-input">0</label></td>
+              <td><label id="taxPreResidentTax" class="currency-input">0</label></td>
+              <td><label id="taxPreCityTax" class="currency-input">0</label></td>
+              <td><label id="taxPrePrefTax" class="currency-input">0</label></td>
             </tr>
             <tr>
               <td>税額控除計</td>
-              <td id="taxCreditS" class="currency-input">0</td>
-              <td id="taxCreditJ" class="currency-input">0</td>
-              <td id="taxCreditCity" class="currency-input">0</td>
-              <td id="taxCreditPref" class="currency-input">0</td>
+              <td><label id="taxCreditIncomeTax" class="currency-input">0</label></td>
+              <td><label id="taxCreditResidentTax" class="currency-input">0</label></td>
+              <td><label id="taxCreditCityTax" class="currency-input">0</label></td>
+              <td><label id="taxCreditPrefTax" class="currency-input">0</label></td>
             </tr>
             <tr>
               <td>税額(所得割額)</td>
-              <td id="taxVarS" class="currency-input">0</td>
-              <td id="taxVarJ" class="currency-input">0</td>
-              <td id="taxVarCity" class="currency-input">0</td>
-              <td id="taxVarPref" class="currency-input">0</td>
+              <td><label id="taxVarIncomeTax" class="currency-input">0</label></td>
+              <td><label id="taxVarResidentTax" class="currency-input">0</label></td>
+              <td><label id="taxVarCityTax" class="currency-input">0</label></td>
+              <td><label id="taxVarPrefTax" class="currency-input">0</label></td>
             </tr>
             <tr>
               <td>税額(均等割額)</td>
               <td></td>
-              <td id="taxFixedJ" class="currency-input">0</td>
-              <td id="taxFixedCity" class="currency-input">0</td>
-              <td id="taxFixedPref" class="currency-input">0</td>
-              <td id="taxFixedEco" class="currency-input">0</td>
+              <td><label id="taxFixedResidentTax" class="currency-input">0</label></td>
+              <td><label id="taxFixedCityTax" class="currency-input">0</label></td>
+              <td><label id="taxFixedPrefTax" class="currency-input">0</label></td>
+              <td><label id="taxFixedEcoTax" class="currency-input">0</label></td>
             </tr>
             <tr>
               <td>税額</td>
-              <td id="taxFinalS" class="currency-input">0</td>
-              <td id="taxFinalJ" class="currency-input">0</td>
+              <td><label id="taxFinalIncomeTax" class="currency-input">0</label></td>
+              <td><label id="taxFinalResidentTax" class="currency-input">0</label></td>
             </tr>
             <tr>
               <td>源泉徴収/既納付</td>
-              <td id="paidS" class="currency-input">0</td>
-              <td id="paidJ" class="currency-input">0</td>
+              <td><label id="paidIncomeTax" class="currency-input">0</label></td>
+              <td><label id="paidResidentTax" class="currency-input">0</label></td>
             </tr>
             <tr>
               <td>納付/還付</td>
-              <td id="refundS" class="currency-input">0</td>
-              <td id="refundJ" class="currency-input">0</td>
+              <td><label id="refundIncomeTax" class="currency-input">0</label></td>
+              <td><label id="refundResidentTax" class="currency-input">0</label></td>
             </tr>
           </tbody>
         </table>

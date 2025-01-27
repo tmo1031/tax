@@ -1,13 +1,15 @@
 //import { get } from 'jquery';
-import { profile /*, deductionInput , incomeDeductions, personalDeductions, taxCredits, tax */ } from './objects.js';
+import { profile, deductionInput, incomeDeductions, personalDeductions, taxCredits, tax } from './objects.js';
 import { Currency } from './objects.js';
+import { CurrencyToString } from './functions.js';
 //import { ProfileType, DeductionInputType, TaxType, Currency ,} from './objects.js';
 
 type Value = number | string | boolean | Currency | null;
 
 type HtmlElement = {
   element: HTMLInputElement | null;
-  value: (newValue?: number | string | boolean | Currency | null) => number | string | boolean | Currency | null;
+  value: (newValue?: Value) => Value;
+  output: () => Value;
 };
 
 type HtmlElements = {
@@ -22,7 +24,7 @@ function setCurrency(value: string): Currency {
 
 function createObjectMapping<T>(getter: () => T, setter: (value: T) => void): (value: Value) => T {
   return (value: Value) => {
-    if (typeof value === typeof getter()) {
+    if (value !== null && value !== undefined) {
       setter(value as T);
     }
     return getter();
@@ -67,7 +69,6 @@ const profileMapping: { [key: string]: (value: Value) => Value } = {
     }
   ),
   // 他のマッピングも追加可能
-  /*
   applicantAttributesMinors: createObjectMapping(
     () => profile.applicant.attributes.minors,
     (value: boolean) => {
@@ -332,265 +333,620 @@ const profileMapping: { [key: string]: (value: Value) => Value } = {
       profile.estate.case.spR6 = value;
     }
   ),
-  */
 };
 
-const profileElements: HtmlElements = Object.keys(profileMapping).reduce((elements, key) => {
-  elements[key] = {
-    element: getElement(key),
-    value: (newValue?: Value) => {
-      if (newValue !== undefined) {
-        return profileMapping[key](newValue);
-      }
-      // newValue が undefined の場合、現在の値を返す
-      return profileMapping[key](null);
-    },
-  };
-  return elements;
-}, {} as HtmlElements);
-
-/*
-  applicantSpouse: { element: getElement('spouseCheck'), value: () => profile.applicant.attributes.hasSpouse },
-  applicantIncomeSalary: { element: getElement('incomeSalary'), value: () => profile.applicant.income.salary },
-  applicantIncomeOther: { element: getElement('incomeOther'), value: () => profile.applicant.income.other },
-  applicantTaxableSalary: { element: getElement('taxableSalary'), value: () => profile.applicant.taxable.salary },
-  applicantTaxableOther: { element: getElement('taxableOther'), value: () => profile.applicant.taxable.other },
-  applicantAttributesMinors: { element: getElement('minors'), value: () => profile.applicant.attributes.minors },
-  applicantAttributesDisability: {
-    element: getElement('disability'),
-    value: () => profile.applicant.attributes.disability,
-  },
-  applicantAttributesSingleP: { element: getElement('single'), value: () => profile.applicant.attributes.single },
-  applicantAttributesStudent: { element: getElement('student'), value: () => profile.applicant.attributes.student },
-  spouseBirthYear: { element: getElement('birthYearS'), value: () => profile.spouse.year },
-  spouseIncomeSalary: { element: getElement('incomeSalaryS'), value: () => profile.spouse.income.salary },
-  spouseIncomeOther: { element: getElement('incomeOtherS'), value: () => profile.spouse.income.other },
-  spouseTaxableSalary: { element: getElement('taxableSalaryS'), value: () => profile.spouse.taxable.salary },
-  spouseTaxableOther: { element: getElement('taxableOtherS'), value: () => profile.spouse.taxable.other },
-  dependentSpecified: { element: getElement('dependentSpecified'), value: () => profile.dependent.specified },
-  dependentElderlyLt: { element: getElement('dependentElderlyLT'), value: () => profile.dependent.elderlyLt },
-  dependentElderly: { element: getElement('dependentElderly'), value: () => profile.dependent.elderly },
-  dependentChild: { element: getElement('dependentChild'), value: () => profile.dependent.child },
-  dependentOther: { element: getElement('dependentOther'), value: () => profile.dependent.other },
-  dependentDisabilityLt: { element: getElement('dependentDisabilityLT'), value: () => profile.dependent.disabilityLt },
-  dependentDisabilityP: { element: getElement('dependentDisabilityP'), value: () => profile.dependent.disabilityP },
-  dependentDisabilityO: { element: getElement('dependentDisabilityO'), value: () => profile.dependent.disabilityO },
-  estateHouseYear: { element: getElement('moveInYear'), value: () => profile.estate.house.year },
-  estateHouseMonth: { element: getElement('moveInMonth'), value: () => profile.estate.house.month },
-  estateHousePrice: { element: getElement('housePrice'), value: () => profile.estate.house.price },
-  estateHouseResident: { element: getElement('houseResident'), value: () => profile.estate.house.resident },
-  estateHouseDebt: { element: getElement('houseDebt'), value: () => profile.estate.house.debt },
-  estateLandYear: { element: getElement('moveInYear'), value: () => profile.estate.land.year },
-  estateLandMonth: { element: getElement('moveInMonth'), value: () => profile.estate.land.month },
-  estateLandPrice: { element: getElement('landPrice'), value: () => profile.estate.land.price },
-  estateLandResident: { element: getElement('landResident'), value: () => profile.estate.land.resident },
-  estateLandDebt: { element: getElement('landDebt'), value: () => profile.estate.land.debt },
-  estateRenovationYear: { element: getElement('renovYear'), value: () => profile.estate.renovation.year },
-  estateRenovationMonth: { element: getElement('renovMonth'), value: () => profile.estate.renovation.month },
-  estateRenovationPrice: { element: getElement('renovPrice'), value: () => profile.estate.renovation.price },
-  estateRenovationPriceSp: { element: getElement('renovPriceSp'), value: () => profile.estate.renovation.priceSp },
-  estateRenovationResident: { element: getElement('renovResident'), value: () => profile.estate.renovation.resident },
-  estateRenovationDebt: { element: getElement('renovDebt'), value: () => profile.estate.renovation.debt },
-  estateLoanBalance: { element: getElement('loanBalance'), value: () => profile.estate.loan.balance },
-  estateCaseQuality: { element: getElement('quality'), value: () => profile.estate.case.quality },
-  estateCaseSalesTax: { element: getElement('salesTax'), value: () => profile.estate.case.salesTax },
-  estateCaseApplyResidentTax: {
-    element: getElement('applyResidentTax'),
-    value: () => profile.estate.case.applyResidentTax,
-  },
-  estateCaseSpH19: { element: getElement('spH19'), value: () => profile.estate.case.spH19 },
-  estateCaseSpR1: { element: getElement('spR1'), value: () => profile.estate.case.spR1 },
-  estateCaseCovid19: { element: getElement('covid19'), value: () => profile.estate.case.covid19 },
-  estateCaseSpR3: { element: getElement('spR3'), value: () => profile.estate.case.spR3 },
-  estateCaseSmall: { element: getElement('small'), value: () => profile.estate.case.small },
-  estateCaseParenting: { element: getElement('parenting'), value: () => profile.estate.case.parenting },
-  estateCaseSpR6: { element: getElement('spR6'), value: () => profile.estate.case.spR6 },
-};
-
-export const deductionInputElements = {
-  lossCasualtyLoss: { element: getElement('casualtyLoss'), value: () => deductionInput.loss.casualtyLoss },
-  lossDisasterReduction: {
-    element: getElement('disasterReduction'),
-    value: () => deductionInput.loss.disasterReduction,
-  },
-  socialInsurance: { element: getElement('socialInsurance'), value: () => deductionInput.social.insurance },
-  socialMutualAid: { element: getElement('mutualAid'), value: () => deductionInput.social.mutualAid },
-  insuranceLifeNew: { element: getElement('lifeInsuranceNew'), value: () => deductionInput.insurance.lifeNew },
-  insuranceLifeOld: { element: getElement('healthInsurance'), value: () => deductionInput.insurance.lifeOld },
-  insuranceHealth: { element: getElement('healthInsurance'), value: () => deductionInput.insurance.health },
-  insuranceAnnuityNew: { element: getElement('annuityNew'), value: () => deductionInput.insurance.annuityNew },
-  insuranceAnnuityOld: { element: getElement('annuityOld'), value: () => deductionInput.insurance.annuityOld },
-  insuranceQuakeInsuranceOld: {
-    element: getElement('quakeInsuranceOld'),
-    value: () => deductionInput.insurance.quakeOld,
-  },
-  insuranceQuakeInsuranceNew: {
-    element: getElement('quakeInsuranceNew'),
-    value: () => deductionInput.insurance.quakeNew,
-  },
-  medicalExpenses: { element: getElement('medicalExpenses'), value: () => deductionInput.medical.expenses },
-  housingLoan: { element: getElement('loans'), value: () => deductionInput.housing.loans },
-  housingImprovementHouse: { element: getElement('improvementHouse'), value: () => deductionInput.housing.improvement },
-  donationsHometownTax: { element: getElement('hometownTax'), value: () => deductionInput.donations.hometownTax },
-  donationsCommunityChest: {
-    element: getElement('communityChest'),
-    value: () => deductionInput.donations.communityChest,
-  },
-  donationsDonationByPref: { element: getElement('donationByPref'), value: () => deductionInput.donations.pref },
-  donationsDonationByCity: { element: getElement('donationByCity'), value: () => deductionInput.donations.city },
-  donationsDonationOther: { element: getElement('donationOther'), value: () => deductionInput.donations.other },
-  donationsContributions: { element: getElement('contributions'), value: () => deductionInput.donations.politics },
-  donationsApplyOneStop: { element: getElement('applyOneStop'), value: () => deductionInput.donations.applyOneStop },
-  donationsApplyContributions: {
-    element: getElement('applyContributions'),
-    value: () => deductionInput.donations.applyPolitics,
-  },
-  withholdingSalary: { element: getElement('withholdingSalary'), value: () => deductionInput.withholding.salary },
-  withholdingStockS: { element: getElement('withholdingStockS'), value: () => deductionInput.withholding.stockS },
-  withholdingStockJ: { element: getElement('withholdingStockJ'), value: () => deductionInput.withholding.stockJ },
-  withholdingDividendS: {
-    element: getElement('withholdingDividendS'),
-    value: () => deductionInput.withholding.dividendS,
-  },
-  withholdingDividendJ: {
-    element: getElement('withholdingDividendJ'),
-    value: () => deductionInput.withholding.dividendJ,
-  },
-  withholdingNonResidents: {
-    element: getElement('nonResidents'),
-    value: () => deductionInput.withholding.nonResidents,
-  },
-  otherDividend: { element: getElement('dividend'), value: () => deductionInput.other.dividend },
-  otherUnlistedStocks: { element: getElement('unlistedStocks'), value: () => deductionInput.other.unlistedStocks },
-  otherForeignTax: { element: getElement('foreignTax'), value: () => deductionInput.other.foreignTax },
-  taxReturnDoTaxReturn: { element: getElement('doTaxReturn'), value: () => deductionInput.taxReturn.apply },
-  taxReturnMethodS: { element: getElement('methodS'), value: () => deductionInput.taxReturn.methodS },
-  taxReturnMethodJ: { element: getElement('methodJ'), value: () => deductionInput.taxReturn.methodJ },
-};
-
-export const taxElements = {
-  incomeDeductionsCasualtyLossS: {
-    element: getElement('casualtyLossS'),
-    value: () => incomeDeductions.casualtyLoss.incomeTax,
-  },
-  incomeDeductionsCasualtyLossJ: {
-    element: getElement('casualtyLossJ'),
-    value: () => incomeDeductions.casualtyLoss.residentTax,
-  },
-  incomeDeductionsMedicalS: { element: getElement('medicalS'), value: () => incomeDeductions.medical.incomeTax },
-  incomeDeductionsMedicalJ: { element: getElement('medicalJ'), value: () => incomeDeductions.medical.residentTax },
-  incomeDeductionsSocialS: { element: getElement('socialS'), value: () => incomeDeductions.social.incomeTax },
-  incomeDeductionsSocialJ: { element: getElement('socialJ'), value: () => incomeDeductions.social.residentTax },
-  incomeDeductionsPensionS: { element: getElement('pensionS'), value: () => incomeDeductions.pension.incomeTax },
-  incomeDeductionsPensionJ: { element: getElement('pensionJ'), value: () => incomeDeductions.pension.residentTax },
-  incomeDeductionsInsuranceLS: {
-    element: getElement('insuranceLS'),
-    value: () => incomeDeductions.insuranceL.incomeTax,
-  },
-  incomeDeductionsInsuranceLJ: {
-    element: getElement('insuranceLJ'),
-    value: () => incomeDeductions.insuranceL.residentTax,
-  },
-  incomeDeductionsInsuranceES: {
-    element: getElement('insuranceES'),
-    value: () => incomeDeductions.insuranceE.incomeTax,
-  },
-  incomeDeductionsInsuranceEJ: {
-    element: getElement('insuranceEJ'),
-    value: () => incomeDeductions.insuranceE.residentTax,
-  },
-  incomeDeductionsDonationsS: { element: getElement('donationsS'), value: () => incomeDeductions.donations.incomeTax },
-  // incomeDeductionsDonationsJ: { element: getElement('donationsJ'), value: () => tax.donations },
-
-  personalDeductionsPersonalS: { element: getElement('personalS'), value: () => personalDeductions.personal.incomeTax },
-  personalDeductionsPersonalJ: {
-    element: getElement('personalJ'),
-    value: () => personalDeductions.personal.residentTax,
-  },
-  personalDeductionsSpouseS: { element: getElement('spouseS'), value: () => personalDeductions.spouse.incomeTax },
-  personalDeductionsSpouseJ: { element: getElement('spouseJ'), value: () => personalDeductions.spouse.residentTax },
-  personalDeductionsDependentS: {
-    element: getElement('dependentS'),
-    value: () => personalDeductions.dependent.incomeTax,
-  },
-  personalDeductionsDependentJ: {
-    element: getElement('dependentJ'),
-    value: () => personalDeductions.dependent.residentTax,
-  },
-  personalDeductionsBasicS: { element: getElement('basicS'), value: () => personalDeductions.basic.incomeTax },
-  personalDeductionsBasicJ: { element: getElement('basicJ'), value: () => personalDeductions.basic.residentTax },
-
-  taxCreditsDividendS: { element: getElement('dividendS'), value: () => taxCredits.dividend.incomeTax },
-  taxCreditsDividendJ: { element: getElement('dividendJ'), value: () => taxCredits.dividend.residentTax },
-  taxCreditsLoansS: { element: getElement('loansS'), value: () => taxCredits.loans.incomeTax },
-  taxCreditsLoansJ: { element: getElement('loansJ'), value: () => taxCredits.loans.residentTax },
-  taxCreditsDonationsS: { element: getElement('donationsCreditS'), value: () => taxCredits.donations.incomeTax },
-  taxCreditsDonationsJ: { element: getElement('donationsCreditJ'), value: () => taxCredits.donations.residentTax },
-  taxCreditsImprovementHouseS: {
-    element: getElement('improvementHouseS'),
-    value: () => taxCredits.improvementHouse.incomeTax,
-  },
-  // taxCreditsImprovementHouseJ: { element: getElement('improvementHouseJ'), value: () => },
-  taxCreditsDisasterReductionS: {
-    element: getElement('disasterReductionS'),
-    value: () => taxCredits.disasterReduction.incomeTax,
-  },
-  // taxCreditsDisasterReductionJ: { element: getElement('disasterReductionJ'), value: () => },
-  taxCreditsForeignTaxS: { element: getElement('foreignTaxS'), value: () => taxCredits.foreignTax.incomeTax },
-  taxCreditsForeignTaxJ: { element: getElement('foreignTaxJ'), value: () => taxCredits.foreignTax.residentTax },
-  taxCreditsWithholdingDividend: {
-    element: getElement('withholdingDividendCreditJ'),
-    value: () => taxCredits.withholdingDividend.residentTax,
-  },
-  taxCreditsWithholdingStock: {
-    element: getElement('withholdingStockCreditJ'),
-    value: () => taxCredits.withholdingStock.residentTax,
-  },
-
-  taxIncomeS: { element: getElement('incomeS'), value: () => tax.income.incomeTax },
-  taxIncomeJ: { element: getElement('incomeJ'), value: () => tax.income.residentTax },
-  taxDeductionS: { element: getElement('deductionS'), value: () => tax.deduction.incomeTax },
-  taxDeductionJ: { element: getElement('deductionJ'), value: () => tax.deduction.residentTax },
-  taxTaxableS: { element: getElement('taxableS'), value: () => tax.taxable.incomeTax },
-  taxTaxableJ: { element: getElement('taxableJ'), value: () => tax.taxable.residentTax },
-  taxTaxPreS: { element: getElement('taxPreS'), value: () => tax.taxPre.incomeTax },
-  taxTaxPreJ: { element: getElement('taxPreJ'), value: () => tax.taxPre.residentTax },
-  taxTaxPreCity: { element: getElement('taxPreCity'), value: () => tax.taxPre.cityTax },
-  taxTaxPrePref: { element: getElement('taxPrePref'), value: () => tax.taxPre.prefTax },
-  taxTaxCreditS: { element: getElement('taxCreditS'), value: () => tax.taxCredit.incomeTax },
-  taxTaxCreditJ: { element: getElement('taxCreditJ'), value: () => tax.taxCredit.residentTax },
-  taxTaxCreditCity: { element: getElement('taxCreditCity'), value: () => tax.taxCredit.cityTax },
-  taxTaxCreditPref: { element: getElement('taxCreditPref'), value: () => tax.taxCredit.prefTax },
-  taxTaxVarS: { element: getElement('taxVarS'), value: () => tax.taxVar.incomeTax },
-  taxTaxVarJ: { element: getElement('taxVarJ'), value: () => tax.taxVar.residentTax },
-  taxTaxVarCity: { element: getElement('taxVarCity'), value: () => tax.taxVar.cityTax },
-  taxTaxVarPref: { element: getElement('taxVarPref'), value: () => tax.taxVar.prefTax },
-  taxTaxFixedJ: { element: getElement('taxFixedJ'), value: () => tax.taxFixed.residentTax },
-  taxTaxFixedCity: { element: getElement('taxFixedCity'), value: () => tax.taxFixed.cityTax },
-  taxTaxFixedPref: { element: getElement('taxFixedPref'), value: () => tax.taxFixed.prefTax },
-  taxTaxFixedEco: { element: getElement('taxFixedEco'), value: () => tax.taxFixed.ecoTax },
-  taxTaxFinalS: { element: getElement('taxFinalS'), value: () => tax.taxFinal.incomeTax },
-  taxTaxFinalJ: { element: getElement('taxFinalJ'), value: () => tax.taxFinal.residentTax },
-  taxPaidS: { element: getElement('paidS'), value: () => tax.paid.incomeTax },
-  taxPaidJ: { element: getElement('paidJ'), value: () => tax.paid.residentTax },
-  taxRefundS: { element: getElement('refundS'), value: () => tax.refund.incomeTax },
-  taxRefundJ: { element: getElement('refundJ'), value: () => tax.refund.residentTax },
-};
-
-const profileMapping: { [key: string]: (value: Value) => void } = {
-  birthYear: (value) => {
-    if (typeof value === 'number') {
-      profile.applicant.year = value;
+const deductionInputMapping: { [key: string]: (value: Value) => Value } = {
+  lossCasualtyLoss: createObjectMapping(
+    () => deductionInput.loss.casualtyLoss,
+    (value: Currency) => {
+      deductionInput.loss.casualtyLoss = value;
     }
-  },
-  birthYearS: (value) => {
-    if (typeof value === 'number') {
-      profile.spouse.year = value;
+  ),
+  lossDisasterReduction: createObjectMapping(
+    () => deductionInput.loss.disasterReduction,
+    (value: Currency) => {
+      deductionInput.loss.disasterReduction = value;
     }
-  },
+  ),
+  socialInsurance: createObjectMapping(
+    () => deductionInput.social.insurance,
+    (value: Currency) => {
+      deductionInput.social.insurance = value;
+    }
+  ),
+  socialMutualAid: createObjectMapping(
+    () => deductionInput.social.mutualAid,
+    (value: Currency) => {
+      deductionInput.social.mutualAid = value;
+    }
+  ),
+  insuranceLifeNew: createObjectMapping(
+    () => deductionInput.insurance.lifeNew,
+    (value: Currency) => {
+      deductionInput.insurance.lifeNew = value;
+    }
+  ),
+  insuranceLifeOld: createObjectMapping(
+    () => deductionInput.insurance.lifeOld,
+    (value: Currency) => {
+      deductionInput.insurance.lifeOld = value;
+    }
+  ),
+  insuranceHealth: createObjectMapping(
+    () => deductionInput.insurance.health,
+    (value: Currency) => {
+      deductionInput.insurance.health = value;
+    }
+  ),
+  insuranceAnnuityNew: createObjectMapping(
+    () => deductionInput.insurance.annuityNew,
+    (value: Currency) => {
+      deductionInput.insurance.annuityNew = value;
+    }
+  ),
+  insuranceAnnuityOld: createObjectMapping(
+    () => deductionInput.insurance.annuityOld,
+    (value: Currency) => {
+      deductionInput.insurance.annuityOld = value;
+    }
+  ),
+  insuranceQuakeInsuranceOld: createObjectMapping(
+    () => deductionInput.insurance.quakeOld,
+    (value: Currency) => {
+      deductionInput.insurance.quakeOld = value;
+    }
+  ),
+  insuranceQuakeInsuranceNew: createObjectMapping(
+    () => deductionInput.insurance.quakeNew,
+    (value: Currency) => {
+      deductionInput.insurance.quakeNew = value;
+    }
+  ),
+  medicalExpenses: createObjectMapping(
+    () => deductionInput.medical.expenses,
+    (value: Currency) => {
+      deductionInput.medical.expenses = value;
+    }
+  ),
+  housingLoan: createObjectMapping(
+    () => deductionInput.housing.loans,
+    (value: Currency) => {
+      deductionInput.housing.loans = value;
+    }
+  ),
+  housingImprovementHouse: createObjectMapping(
+    () => deductionInput.housing.improvement,
+    (value: Currency) => {
+      deductionInput.housing.improvement = value;
+    }
+  ),
+  donationsHometownTax: createObjectMapping(
+    () => deductionInput.donations.hometownTax,
+    (value: Currency) => {
+      deductionInput.donations.hometownTax = value;
+    }
+  ),
+  donationsCommunityChest: createObjectMapping(
+    () => deductionInput.donations.communityChest,
+    (value: Currency) => {
+      deductionInput.donations.communityChest = value;
+    }
+  ),
+  donationsDonationByPref: createObjectMapping(
+    () => deductionInput.donations.pref,
+    (value: Currency) => {
+      deductionInput.donations.pref = value;
+    }
+  ),
+  donationsDonationByCity: createObjectMapping(
+    () => deductionInput.donations.city,
+    (value: Currency) => {
+      deductionInput.donations.city = value;
+    }
+  ),
+  donationsDonationOther: createObjectMapping(
+    () => deductionInput.donations.other,
+    (value: Currency) => {
+      deductionInput.donations.other = value;
+    }
+  ),
+  donationsContributions: createObjectMapping(
+    () => deductionInput.donations.politics,
+    (value: Currency) => {
+      deductionInput.donations.politics = value;
+    }
+  ),
+  donationsApplyOneStop: createObjectMapping(
+    () => deductionInput.donations.applyOneStop,
+    (value: boolean) => {
+      deductionInput.donations.applyOneStop = value;
+    }
+  ),
+  donationsApplyContributions: createObjectMapping(
+    () => deductionInput.donations.applyPolitics,
+    (value: boolean) => {
+      deductionInput.donations.applyPolitics = value;
+    }
+  ),
+  withholdingSalary: createObjectMapping(
+    () => deductionInput.withholding.salary,
+    (value: Currency) => {
+      deductionInput.withholding.salary = value;
+    }
+  ),
+  withholdingStockS: createObjectMapping(
+    () => deductionInput.withholding.stockS,
+    (value: Currency) => {
+      deductionInput.withholding.stockS = value;
+    }
+  ),
+  withholdingStockJ: createObjectMapping(
+    () => deductionInput.withholding.stockJ,
+    (value: Currency) => {
+      deductionInput.withholding.stockJ = value;
+    }
+  ),
+  withholdingDividendS: createObjectMapping(
+    () => deductionInput.withholding.dividendS,
+    (value: Currency) => {
+      deductionInput.withholding.dividendS = value;
+    }
+  ),
+  withholdingDividendJ: createObjectMapping(
+    () => deductionInput.withholding.dividendJ,
+    (value: Currency) => {
+      deductionInput.withholding.dividendJ = value;
+    }
+  ),
+  withholdingNonResidents: createObjectMapping(
+    () => deductionInput.withholding.nonResidents,
+    (value: Currency) => {
+      deductionInput.withholding.nonResidents = value;
+    }
+  ),
+  otherDividend: createObjectMapping(
+    () => deductionInput.other.dividend,
+    (value: Currency) => {
+      deductionInput.other.dividend = value;
+    }
+  ),
+  otherUnlistedStocks: createObjectMapping(
+    () => deductionInput.other.unlistedStocks,
+    (value: Currency) => {
+      deductionInput.other.unlistedStocks = value;
+    }
+  ),
+  otherForeignTax: createObjectMapping(
+    () => deductionInput.other.foreignTax,
+    (value: Currency) => {
+      deductionInput.other.foreignTax = value;
+    }
+  ),
+  taxReturnDoTaxReturn: createObjectMapping(
+    () => deductionInput.taxReturn.apply,
+    (value: boolean) => {
+      deductionInput.taxReturn.apply = value;
+    }
+  ),
+  taxReturnMethodS: createObjectMapping(
+    () => deductionInput.taxReturn.methodS,
+    (value: number) => {
+      deductionInput.taxReturn.methodS = value;
+    }
+  ),
+  taxReturnMethodJ: createObjectMapping(
+    () => deductionInput.taxReturn.methodJ,
+    (value: number) => {
+      deductionInput.taxReturn.methodJ = value;
+    }
+  ),
 };
-*/
 
+const incomeDeductionsMapping: { [key: string]: (value: Value) => Value } = {
+  casualtyLossS: createObjectMapping(
+    () => incomeDeductions.casualtyLoss.incomeTax,
+    (value: Currency) => {
+      incomeDeductions.casualtyLoss.incomeTax = value;
+    }
+  ),
+  casualtyLossJ: createObjectMapping(
+    () => incomeDeductions.casualtyLoss.residentTax,
+    (value: Currency) => {
+      incomeDeductions.casualtyLoss.residentTax = value;
+    }
+  ),
+  medicalS: createObjectMapping(
+    () => incomeDeductions.medical.incomeTax,
+    (value: Currency) => {
+      incomeDeductions.medical.incomeTax = value;
+    }
+  ),
+  medicalJ: createObjectMapping(
+    () => incomeDeductions.medical.residentTax,
+    (value: Currency) => {
+      incomeDeductions.medical.residentTax = value;
+    }
+  ),
+  socialS: createObjectMapping(
+    () => incomeDeductions.social.incomeTax,
+    (value: Currency) => {
+      incomeDeductions.social.incomeTax = value;
+    }
+  ),
+  socialJ: createObjectMapping(
+    () => incomeDeductions.social.residentTax,
+    (value: Currency) => {
+      incomeDeductions.social.residentTax = value;
+    }
+  ),
+  pensionS: createObjectMapping(
+    () => incomeDeductions.pension.incomeTax,
+    (value: Currency) => {
+      incomeDeductions.pension.incomeTax = value;
+    }
+  ),
+  pensionJ: createObjectMapping(
+    () => incomeDeductions.pension.residentTax,
+    (value: Currency) => {
+      incomeDeductions.pension.residentTax = value;
+    }
+  ),
+  insuranceLS: createObjectMapping(
+    () => incomeDeductions.insuranceL.incomeTax,
+    (value: Currency) => {
+      incomeDeductions.insuranceL.incomeTax = value;
+    }
+  ),
+  insuranceLJ: createObjectMapping(
+    () => incomeDeductions.insuranceL.residentTax,
+    (value: Currency) => {
+      incomeDeductions.insuranceL.residentTax = value;
+    }
+  ),
+  insuranceES: createObjectMapping(
+    () => incomeDeductions.insuranceE.incomeTax,
+    (value: Currency) => {
+      incomeDeductions.insuranceE.incomeTax = value;
+    }
+  ),
+  insuranceEJ: createObjectMapping(
+    () => incomeDeductions.insuranceE.residentTax,
+    (value: Currency) => {
+      incomeDeductions.insuranceE.residentTax = value;
+    }
+  ),
+  donationsS: createObjectMapping(
+    () => incomeDeductions.donations.incomeTax,
+    (value: Currency) => {
+      incomeDeductions.donations.incomeTax = value;
+    }
+  ),
+};
+
+const personalDeductionsMapping: { [key: string]: (value: Value) => Value } = {
+  personalS: createObjectMapping(
+    () => personalDeductions.personal.incomeTax,
+    (value: Currency) => {
+      personalDeductions.personal.incomeTax = value;
+    }
+  ),
+  personalJ: createObjectMapping(
+    () => personalDeductions.personal.residentTax,
+    (value: Currency) => {
+      personalDeductions.personal.residentTax = value;
+    }
+  ),
+  spouseS: createObjectMapping(
+    () => personalDeductions.spouse.incomeTax,
+    (value: Currency) => {
+      personalDeductions.spouse.incomeTax = value;
+    }
+  ),
+  spouseJ: createObjectMapping(
+    () => personalDeductions.spouse.residentTax,
+    (value: Currency) => {
+      personalDeductions.spouse.residentTax = value;
+    }
+  ),
+  dependentS: createObjectMapping(
+    () => personalDeductions.dependent.incomeTax,
+    (value: Currency) => {
+      personalDeductions.dependent.incomeTax = value;
+    }
+  ),
+  dependentJ: createObjectMapping(
+    () => personalDeductions.dependent.residentTax,
+    (value: Currency) => {
+      personalDeductions.dependent.residentTax = value;
+    }
+  ),
+  basicS: createObjectMapping(
+    () => personalDeductions.basic.incomeTax,
+    (value: Currency) => {
+      personalDeductions.basic.incomeTax = value;
+    }
+  ),
+  basicJ: createObjectMapping(
+    () => personalDeductions.basic.residentTax,
+    (value: Currency) => {
+      personalDeductions.basic.residentTax = value;
+    }
+  ),
+};
+
+const taxCreditsMapping: { [key: string]: (value: Value) => Value } = {
+  dividendS: createObjectMapping(
+    () => taxCredits.dividend.incomeTax,
+    (value: Currency) => {
+      taxCredits.dividend.incomeTax = value;
+    }
+  ),
+  dividendJ: createObjectMapping(
+    () => taxCredits.dividend.residentTax,
+    (value: Currency) => {
+      taxCredits.dividend.residentTax = value;
+    }
+  ),
+  loansS: createObjectMapping(
+    () => taxCredits.loans.incomeTax,
+    (value: Currency) => {
+      taxCredits.loans.incomeTax = value;
+    }
+  ),
+  loansJ: createObjectMapping(
+    () => taxCredits.loans.residentTax,
+    (value: Currency) => {
+      taxCredits.loans.residentTax = value;
+    }
+  ),
+  donationsCreditS: createObjectMapping(
+    () => taxCredits.donations.incomeTax,
+    (value: Currency) => {
+      taxCredits.donations.incomeTax = value;
+    }
+  ),
+  donationsCreditJ: createObjectMapping(
+    () => taxCredits.donations.residentTax,
+    (value: Currency) => {
+      taxCredits.donations.residentTax = value;
+    }
+  ),
+  improvementHouseS: createObjectMapping(
+    () => taxCredits.improvementHouse.incomeTax,
+    (value: Currency) => {
+      taxCredits.improvementHouse.incomeTax = value;
+    }
+  ),
+  disasterReductionS: createObjectMapping(
+    () => taxCredits.disasterReduction.incomeTax,
+    (value: Currency) => {
+      taxCredits.disasterReduction.incomeTax = value;
+    }
+  ),
+  foreignTaxS: createObjectMapping(
+    () => taxCredits.foreignTax.incomeTax,
+    (value: Currency) => {
+      taxCredits.foreignTax.incomeTax = value;
+    }
+  ),
+  foreignTaxJ: createObjectMapping(
+    () => taxCredits.foreignTax.residentTax,
+    (value: Currency) => {
+      taxCredits.foreignTax.residentTax = value;
+    }
+  ),
+  withholdingDividendCreditJ: createObjectMapping(
+    () => taxCredits.withholdingDividendCredit.residentTax,
+    (value: Currency) => {
+      taxCredits.withholdingDividendCredit.residentTax = value;
+    }
+  ),
+  withholdingStockCreditJ: createObjectMapping(
+    () => taxCredits.withholdingStockCredit.residentTax,
+    (value: Currency) => {
+      taxCredits.withholdingStockCredit.residentTax = value;
+    }
+  ),
+};
+
+const taxMapping: { [key: string]: (value: Value) => Value } = {
+  incomeIncomeTax: createObjectMapping(
+    () => tax.income.incomeTax,
+    (value: Currency) => {
+      tax.income.incomeTax = value;
+    }
+  ),
+  incomeResidentTax: createObjectMapping(
+    () => tax.income.residentTax,
+    (value: Currency) => {
+      tax.income.residentTax = value;
+    }
+  ),
+  deductionIncomeTax: createObjectMapping(
+    () => tax.deduction.incomeTax,
+    (value: Currency) => {
+      tax.deduction.incomeTax = value;
+    }
+  ),
+  deductionResidentTax: createObjectMapping(
+    () => tax.deduction.residentTax,
+    (value: Currency) => {
+      tax.deduction.residentTax = value;
+    }
+  ),
+  taxableIncomeTax: createObjectMapping(
+    () => tax.taxable.incomeTax,
+    (value: Currency) => {
+      tax.taxable.incomeTax = value;
+    }
+  ),
+  taxableResidentTax: createObjectMapping(
+    () => tax.taxable.residentTax,
+    (value: Currency) => {
+      tax.taxable.residentTax = value;
+    }
+  ),
+  taxPreIncomeTax: createObjectMapping(
+    () => tax.taxPre.incomeTax,
+    (value: Currency) => {
+      tax.taxPre.incomeTax = value;
+    }
+  ),
+  taxPreResidentTax: createObjectMapping(
+    () => tax.taxPre.residentTax,
+    (value: Currency) => {
+      tax.taxPre.residentTax = value;
+    }
+  ),
+  taxPreCityTax: createObjectMapping(
+    () => tax.taxPre.cityTax,
+    (value: Currency) => {
+      tax.taxPre.cityTax = value;
+    }
+  ),
+  taxPrePrefTax: createObjectMapping(
+    () => tax.taxPre.prefTax,
+    (value: Currency) => {
+      tax.taxPre.prefTax = value;
+    }
+  ),
+  taxCreditIncomeTax: createObjectMapping(
+    () => tax.taxCredit.incomeTax,
+    (value: Currency) => {
+      tax.taxCredit.incomeTax = value;
+    }
+  ),
+  taxCreditResidentTax: createObjectMapping(
+    () => tax.taxCredit.residentTax,
+    (value: Currency) => {
+      tax.taxCredit.residentTax = value;
+    }
+  ),
+  taxCreditCityTax: createObjectMapping(
+    () => tax.taxCredit.cityTax,
+    (value: Currency) => {
+      tax.taxCredit.cityTax = value;
+    }
+  ),
+  taxCreditPrefTax: createObjectMapping(
+    () => tax.taxCredit.prefTax,
+    (value: Currency) => {
+      tax.taxCredit.prefTax = value;
+    }
+  ),
+  taxVarIncomeTax: createObjectMapping(
+    () => tax.taxVar.incomeTax,
+    (value: Currency) => {
+      tax.taxVar.incomeTax = value;
+    }
+  ),
+  taxVarResidentTax: createObjectMapping(
+    () => tax.taxVar.residentTax,
+    (value: Currency) => {
+      tax.taxVar.residentTax = value;
+    }
+  ),
+  taxVarCityTax: createObjectMapping(
+    () => tax.taxVar.cityTax,
+    (value: Currency) => {
+      tax.taxVar.cityTax = value;
+    }
+  ),
+  taxVarPrefTax: createObjectMapping(
+    () => tax.taxVar.prefTax,
+    (value: Currency) => {
+      tax.taxVar.prefTax = value;
+    }
+  ),
+  taxFixedResidentTax: createObjectMapping(
+    () => tax.taxFixed.residentTax,
+    (value: Currency) => {
+      tax.taxFixed.residentTax = value;
+    }
+  ),
+  taxFixedCityTax: createObjectMapping(
+    () => tax.taxFixed.cityTax,
+    (value: Currency) => {
+      tax.taxFixed.cityTax = value;
+    }
+  ),
+  taxFixedPrefTax: createObjectMapping(
+    () => tax.taxFixed.prefTax,
+    (value: Currency) => {
+      tax.taxFixed.prefTax = value;
+    }
+  ),
+  taxFixedEcoTax: createObjectMapping(
+    () => tax.taxFixed.ecoTax,
+    (value: Currency) => {
+      tax.taxFixed.ecoTax = value;
+    }
+  ),
+  taxFinalIncomeTax: createObjectMapping(
+    () => tax.taxFinal.incomeTax,
+    (value: Currency) => {
+      tax.taxFinal.incomeTax = value;
+    }
+  ),
+  taxFinalResidentTax: createObjectMapping(
+    () => tax.taxFinal.residentTax,
+    (value: Currency) => {
+      tax.taxFinal.residentTax = value;
+    }
+  ),
+  paidIncomeTax: createObjectMapping(
+    () => tax.paid.incomeTax,
+    (value: Currency) => {
+      tax.paid.incomeTax = value;
+    }
+  ),
+  paidResidentTax: createObjectMapping(
+    () => tax.paid.residentTax,
+    (value: Currency) => {
+      tax.paid.residentTax = value;
+    }
+  ),
+  refundIncomeTax: createObjectMapping(
+    () => tax.refund.incomeTax,
+    (value: Currency) => {
+      tax.refund.incomeTax = value;
+    }
+  ),
+  refundResidentTax: createObjectMapping(
+    () => tax.refund.residentTax,
+    (value: Currency) => {
+      tax.refund.residentTax = value;
+    }
+  ),
+};
+
+type Mapping = { [key: string]: (value: Value) => Value };
+
+function createHtmlElements(mapping: Mapping): HtmlElements {
+  return Object.keys(mapping).reduce((elements, key) => {
+    elements[key] = {
+      element: getElement(key),
+      value: (newValue?: Value) => {
+        if (newValue !== undefined) {
+          return mapping[key](newValue);
+        }
+        // newValue が undefined の場合、現在の値を返す
+        return mapping[key](null);
+      },
+      output: () => {
+        return mapping[key](null);
+      },
+    };
+    return elements;
+  }, {} as HtmlElements);
+}
+
+const profileElements: HtmlElements = createHtmlElements(profileMapping);
+export const deductionInputElements: HtmlElements = createHtmlElements(deductionInputMapping);
+export const incomeDeductionsElements: HtmlElements = createHtmlElements(incomeDeductionsMapping);
+export const personalDeductionsElements: HtmlElements = createHtmlElements(personalDeductionsMapping);
+export const taxCreditsElements: HtmlElements = createHtmlElements(taxCreditsMapping);
+export const taxElements: HtmlElements = createHtmlElements(taxMapping);
 /*
 function isCurrency(value: Value): value is Currency {
   return typeof value === 'object' && value !== null && 'amount' in value;
@@ -603,25 +959,43 @@ export function updateValue(element: HtmlElement) {
     newValue = element.element.checked;
   }
   const value = element.value();
-  console.log('value:', value);
-  console.log(typeof value);
+  //console.log('value:', value);
+  //console.log(typeof value);
 
   if (typeof value === 'number' && typeof newValue === 'string') {
-    console.log('update number');
+    //console.log('update number');
     const parsedValue = parseInt(newValue, 10);
     if (!isNaN(parsedValue)) {
       element.value(parsedValue);
     }
   } else if (typeof value === 'object' && typeof newValue === 'string') {
-    console.log('update Currency');
+    //console.log('update Currency');
     const parsedValue = setCurrency(newValue);
     element.value(parsedValue);
   } else if (typeof value === 'boolean' && typeof newValue === 'boolean') {
-    console.log('update boolean');
+    //console.log('update boolean');
     element.value(newValue === true);
   } else if (typeof value === 'string') {
-    console.log('update string');
+    //console.log('update string');
     element.value(newValue || '');
+  }
+}
+
+export function setValue(element: HTMLInputElement | HTMLLabelElement | null, value: Value) {
+  if (element instanceof HTMLLabelElement) {
+    if (element && typeof value === 'object' && value !== null && 'amount' in value) {
+      return (element.textContent = CurrencyToString(value) || '');
+    } else if (element) {
+      return (element.textContent = value?.toString() || '');
+    }
+  } else if (element instanceof HTMLInputElement) {
+    if (element?.type === 'checkbox' && typeof value === 'boolean') {
+      return (element.checked = value);
+    } else if (element && typeof value === 'object' && value !== null && 'amount' in value) {
+      return (element.value = CurrencyToString(value) || '');
+    } else if (element) {
+      return (element.value = value?.toString() || '');
+    }
   }
 }
 
@@ -630,14 +1004,6 @@ export function getHtmlElements(elements: HtmlElements) {
     if (elements[key] && typeof elements[key] === 'object') {
       const element = elements[key] as HtmlElement;
       if ('element' in element && 'value' in element) {
-        let newValue: Value = element.element?.value || '';
-        if (element.element?.type === 'checkbox') {
-          newValue = element.element.checked;
-        }
-        console.log('key:', key);
-        console.log('value:', element.value());
-        console.log('newValue:', newValue);
-        console.log('element:', element);
         updateValue(element);
       }
     }
@@ -645,20 +1011,14 @@ export function getHtmlElements(elements: HtmlElements) {
 }
 
 export function setHtmlElements(elements: HtmlElements) {
+  //const keysToProcess = ['applicantTaxableSalary'];
+  //console.log('keysToProcess:', keysToProcess);
+  //keysToProcess.forEach((key) => {
   for (const key in elements) {
     if (elements[key] && typeof elements[key] === 'object') {
       const element = elements[key] as HtmlElement;
-      if ('element' in element && 'value' in element) {
-        const value = element.value();
-        if (element.element) {
-          if (typeof value === 'object' && value !== null && 'amount' in value) {
-            element.element.value = value.amount.toString();
-          } else {
-            element.element.value = value?.toString() || '';
-          }
-        }
-      } else {
-        setHtmlElements(element as HtmlElements);
+      if ('element' in element && 'output' in element) {
+        setValue(element.element, element.output());
       }
     }
   }
@@ -669,24 +1029,35 @@ export function getProfile() {
   console.log('profile:', profile);
 }
 
-/* 
+export function showProfile() {
+  console.log('profile:', profile);
+  profile.applicant.taxable.salary = profile.applicant.income.salary;
+  profile.spouse.taxable.salary = profile.spouse.income.salary;
+  setProfile();
+}
+
+export function setProfile() {
+  return setHtmlElements(profileElements);
+}
+
 export function getDeductionInput() {
   getHtmlElements(deductionInputElements);
   console.log('deductionInput:', deductionInput);
 }
 
+/*
 export function getTax() {
   getHtmlElements(taxElements);
 }
-export function setProfile() {
-  setHtmlElements(profileElements);
-}
+*/
 
 export function setDeductionInput() {
-  setHtmlElements(deductionInputElements);
+  return setHtmlElements(deductionInputElements);
 }
 
-export function setTax() {
+export function showTax() {
+  setHtmlElements(incomeDeductionsElements);
+  setHtmlElements(personalDeductionsElements);
+  setHtmlElements(taxCreditsElements);
   setHtmlElements(taxElements);
 }
- */

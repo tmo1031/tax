@@ -395,8 +395,8 @@ export const taxCredits: Record<string, TaxDetails> = {
   improvementHouse: createTaxDetails(),
   disasterReduction: createTaxDetails(),
   foreignTax: createTaxDetails(),
-  withholdingDividend: createTaxDetails(),
-  withholdingStock: createTaxDetails(),
+  withholdingDividendCredit: createTaxDetails(),
+  withholdingStockCredit: createTaxDetails(),
 };
 
 export const paid: Record<string, TaxDetails> = {
