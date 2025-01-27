@@ -22,6 +22,38 @@ function setCurrency(value: string): Currency {
   return { amount: parseInt(value.replace(/,/g, ''), 10) };
 }
 
+type MappingEntry = {
+  key: string;
+  path: string;
+  type: string;
+};
+
+const mappings: MappingEntry[] = [
+  { key: 'applicantBirthYear', path: 'applicant.year', type: 'number' },
+  { key: 'applicantIncomeSalary', path: 'applicant.income.salary', type: 'object' },
+  { key: 'applicantHasSpouse', path: 'applicant.attributes.hasSpouse', type: 'boolean' },
+  { key: 'applicantTaxableSalary', path: 'applicant.taxable.salary', type: 'object' },
+  // 他のマッピングも追加可能
+];
+
+function createGetter(path: string): () => Value {
+  return new Function('profile', `return profile.${path};`).bind(null, profile);
+}
+
+function createSetter(path: string, type: string): (value: Value) => void {
+  return new Function(
+    'profile',
+    'value',
+    `
+    if (typeof value === '${type}') {
+      profile.${path} = value;
+    } else {
+      throw new TypeError('Expected ${type}');
+    }
+  `
+  ).bind(null, profile);
+}
+
 function createObjectMapping<T>(getter: () => T, setter: (value: T) => void): (value: Value) => T {
   return (value: Value) => {
     if (value !== null && value !== undefined) {
@@ -31,6 +63,17 @@ function createObjectMapping<T>(getter: () => T, setter: (value: T) => void): (v
   };
 }
 
+const profileMapping: { [key: string]: (value: Value) => Value } = mappings.reduce(
+  (acc, mapping) => {
+    const getter = createGetter(mapping.path);
+    const setter = createSetter(mapping.path, mapping.type);
+    acc[mapping.key] = createObjectMapping(getter, setter);
+    return acc;
+  },
+  {} as { [key: string]: (value: Value) => Value }
+);
+
+/*
 const profileMapping: { [key: string]: (value: Value) => Value } = {
   applicantBirthYear: createObjectMapping(
     () => profile.applicant.year,
@@ -334,6 +377,7 @@ const profileMapping: { [key: string]: (value: Value) => Value } = {
     }
   ),
 };
+*/
 
 const deductionInputMapping: { [key: string]: (value: Value) => Value } = {
   lossCasualtyLoss: createObjectMapping(
