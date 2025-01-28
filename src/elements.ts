@@ -2,7 +2,6 @@
 import { profile, deductionInput, incomeDeductions, personalDeductions, taxCredits, tax } from './objects.js';
 import { Currency } from './objects.js';
 import { CurrencyToString } from './functions.js';
-//import { ProfileType, DeductionInputType, TaxType, Currency ,} from './objects.js';
 
 type Value = number | string | boolean | Currency | null;
 
@@ -24,34 +23,191 @@ function setCurrency(value: string): Currency {
 
 type MappingEntry = {
   key: string;
-  path: string;
-  type: string;
+  fullPath: string;
 };
 
-const mappings: MappingEntry[] = [
-  { key: 'applicantBirthYear', path: 'applicant.year', type: 'number' },
-  { key: 'applicantIncomeSalary', path: 'applicant.income.salary', type: 'object' },
-  { key: 'applicantHasSpouse', path: 'applicant.attributes.hasSpouse', type: 'boolean' },
-  { key: 'applicantTaxableSalary', path: 'applicant.taxable.salary', type: 'object' },
-  // 他のマッピングも追加可能
+const objectMappings = {
+  profile,
+  deductionInput,
+  incomeDeductions,
+  personalDeductions,
+  taxCredits,
+  tax,
+};
+
+const profileMappings: MappingEntry[] = [
+  { key: 'applicantBirthYear', fullPath: 'profile.applicant.year' },
+  { key: 'applicantSpouse', fullPath: 'profile.applicant.attributes.hasSpouse' },
+  { key: 'applicantIncomeSalary', fullPath: 'profile.applicant.income.salary' },
+  { key: 'applicantIncomeOther', fullPath: 'profile.applicant.income.other' },
+  { key: 'applicantTaxableSalary', fullPath: 'profile.applicant.taxable.salary' },
+  { key: 'applicantTaxableOther', fullPath: 'profile.applicant.taxable.other' },
+  { key: 'applicantAttributesMinors', fullPath: 'profile.applicant.attributes.minors' },
+  { key: 'applicantAttributesDisability', fullPath: 'profile.applicant.attributes.disability' },
+  { key: 'applicantAttributesSingleP', fullPath: 'profile.applicant.attributes.single' },
+  { key: 'applicantAttributesStudent', fullPath: 'profile.applicant.attributes.student' },
+  { key: 'spouseBirthYear', fullPath: 'profile.spouse.year' },
+  { key: 'spouseIncomeSalary', fullPath: 'profile.spouse.income.salary' },
+  { key: 'spouseIncomeOther', fullPath: 'profile.spouse.income.other' },
+  { key: 'spouseTaxableSalary', fullPath: 'profile.spouse.taxable.salary' },
+  { key: 'spouseTaxableOther', fullPath: 'profile.spouse.taxable.other' },
+  { key: 'dependentSpecified', fullPath: 'profile.dependent.specified' },
+  { key: 'dependentElderlyLt', fullPath: 'profile.dependent.elderlyLt' },
+  { key: 'dependentElderly', fullPath: 'profile.dependent.elderly' },
+  { key: 'dependentChild', fullPath: 'profile.dependent.child' },
+  { key: 'dependentOther', fullPath: 'profile.dependent.other' },
+  { key: 'dependentDisabilityLt', fullPath: 'profile.dependent.disabilityLt' },
+  { key: 'dependentDisabilityP', fullPath: 'profile.dependent.disabilityP' },
+  { key: 'dependentDisabilityO', fullPath: 'profile.dependent.disabilityO' },
+  { key: 'estateHouseYear', fullPath: 'profile.estate.house.year' },
+  { key: 'estateHouseMonth', fullPath: 'profile.estate.house.month' },
+  { key: 'estateHousePrice', fullPath: 'profile.estate.house.price' },
+  { key: 'estateHouseResident', fullPath: 'profile.estate.house.resident' },
+  { key: 'estateHouseDebt', fullPath: 'profile.estate.house.debt' },
+  { key: 'estateLandYear', fullPath: 'profile.estate.land.year' },
+  { key: 'estateLandMonth', fullPath: 'profile.estate.land.month' },
+  { key: 'estateLandPrice', fullPath: 'profile.estate.land.price' },
+  { key: 'estateLandResident', fullPath: 'profile.estate.land.resident' },
+  { key: 'estateLandDebt', fullPath: 'profile.estate.land.debt' },
+  { key: 'estateRenovationYear', fullPath: 'profile.estate.renovation.year' },
+  { key: 'estateRenovationMonth', fullPath: 'profile.estate.renovation.month' },
+  { key: 'estateRenovationPrice', fullPath: 'profile.estate.renovation.price' },
+  { key: 'estateRenovationPriceSp', fullPath: 'profile.estate.renovation.priceSp' },
+  { key: 'estateRenovationResident', fullPath: 'profile.estate.renovation.resident' },
+  { key: 'estateRenovationDebt', fullPath: 'profile.estate.renovation.debt' },
+  { key: 'estateLoanBalance', fullPath: 'profile.estate.loan.balance' },
+  { key: 'estateCaseQuality', fullPath: 'profile.estate.case.quality' },
+  { key: 'estateCaseSalesTax', fullPath: 'profile.estate.case.salesTax' },
+  { key: 'estateCaseApplyResidentTax', fullPath: 'profile.estate.case.applyResidentTax' },
+  { key: 'estateCaseSpH19', fullPath: 'profile.estate.case.spH19' },
+  { key: 'estateCaseSpR1', fullPath: 'profile.estate.case.spR1' },
+  { key: 'estateCaseCovid19', fullPath: 'profile.estate.case.covid19' },
+  { key: 'estateCaseSpR3', fullPath: 'profile.estate.case.spR3' },
+  { key: 'estateCaseSmall', fullPath: 'profile.estate.case.small' },
+  { key: 'estateCaseParenting', fullPath: 'profile.estate.case.parenting' },
+  { key: 'estateCaseSpR6', fullPath: 'profile.estate.case.spR6' },
+];
+const deductionInputMappings: MappingEntry[] = [
+  { key: 'lossCasualtyLoss', fullPath: 'deductionInput.loss.casualtyLoss' },
+  { key: 'lossDisasterReduction', fullPath: 'deductionInput.loss.disasterReduction' },
+  { key: 'socialInsurance', fullPath: 'deductionInput.social.insurance' },
+  { key: 'socialMutualAid', fullPath: 'deductionInput.social.mutualAid' },
+  { key: 'insuranceLifeNew', fullPath: 'deductionInput.insurance.lifeNew' },
+  { key: 'insuranceLifeOld', fullPath: 'deductionInput.insurance.lifeOld' },
+  { key: 'insuranceHealth', fullPath: 'deductionInput.insurance.health' },
+  { key: 'insuranceAnnuityNew', fullPath: 'deductionInput.insurance.annuityNew' },
+  { key: 'insuranceAnnuityOld', fullPath: 'deductionInput.insurance.annuityOld' },
+  { key: 'insuranceQuakeInsuranceOld', fullPath: 'deductionInput.insurance.quakeOld' },
+  { key: 'insuranceQuakeInsuranceNew', fullPath: 'deductionInput.insurance.quakeNew' },
+  { key: 'medicalExpenses', fullPath: 'deductionInput.medical.expenses' },
+  { key: 'housingLoan', fullPath: 'deductionInput.housing.loans' },
+  { key: 'housingImprovementHouse', fullPath: 'deductionInput.housing.improvement' },
+  { key: 'donationsHometownTax', fullPath: 'deductionInput.donations.hometownTax' },
+  { key: 'donationsCommunityChest', fullPath: 'deductionInput.donations.communityChest' },
+  { key: 'donationsDonationByPref', fullPath: 'deductionInput.donations.pref' },
+  { key: 'donationsDonationByCity', fullPath: 'deductionInput.donations.city' },
+  { key: 'donationsDonationOther', fullPath: 'deductionInput.donations.other' },
+  { key: 'donationsContributions', fullPath: 'deductionInput.donations.politics' },
+  { key: 'donationsApplyOneStop', fullPath: 'deductionInput.donations.applyOneStop' },
+  { key: 'donationsApplyContributions', fullPath: 'deductionInput.donations.applyPolitics' },
+  { key: 'withholdingSalary', fullPath: 'deductionInput.withholding.salary' },
+  { key: 'withholdingStockS', fullPath: 'deductionInput.withholding.stockS' },
+  { key: 'withholdingStockJ', fullPath: 'deductionInput.withholding.stockJ' },
+  { key: 'withholdingDividendS', fullPath: 'deductionInput.withholding.dividendS' },
+  { key: 'withholdingDividendJ', fullPath: 'deductionInput.withholding.dividendJ' },
+  { key: 'withholdingNonResidents', fullPath: 'deductionInput.withholding.nonResidents' },
+  { key: 'otherDividend', fullPath: 'deductionInput.other.dividend' },
+  { key: 'otherUnlistedStocks', fullPath: 'deductionInput.other.unlistedStocks' },
+  { key: 'otherForeignTax', fullPath: 'deductionInput.other.foreignTax' },
+  { key: 'taxReturnDoTaxReturn', fullPath: 'deductionInput.taxReturn.apply' },
+  { key: 'taxReturnMethodS', fullPath: 'deductionInput.taxReturn.methodS' },
+  { key: 'taxReturnMethodJ', fullPath: 'deductionInput.taxReturn.methodJ' },
+];
+const personalDeductionsMappings: MappingEntry[] = [
+  { key: 'personalS', fullPath: 'personalDeductions.personal.incomeTax' },
+  { key: 'personalJ', fullPath: 'personalDeductions.personal.residentTax' },
+  { key: 'spouseS', fullPath: 'personalDeductions.spouse.incomeTax' },
+  { key: 'spouseJ', fullPath: 'personalDeductions.spouse.residentTax' },
+  { key: 'dependentS', fullPath: 'personalDeductions.dependent.incomeTax' },
+  { key: 'dependentJ', fullPath: 'personalDeductions.dependent.residentTax' },
+  { key: 'basicS', fullPath: 'personalDeductions.basic.incomeTax' },
+  { key: 'basicJ', fullPath: 'personalDeductions.basic.residentTax' },
+];
+const incomeDeductionsMappings: MappingEntry[] = [
+  { key: 'casualtyLossS', fullPath: 'incomeDeductions.casualtyLoss.incomeTax' },
+  { key: 'casualtyLossJ', fullPath: 'incomeDeductions.casualtyLoss.residentTax' },
+  { key: 'medicalS', fullPath: 'incomeDeductions.medical.incomeTax' },
+  { key: 'medicalJ', fullPath: 'incomeDeductions.medical.residentTax' },
+  { key: 'socialS', fullPath: 'incomeDeductions.social.incomeTax' },
+  { key: 'socialJ', fullPath: 'incomeDeductions.social.residentTax' },
+  { key: 'pensionS', fullPath: 'incomeDeductions.pension.incomeTax' },
+  { key: 'pensionJ', fullPath: 'incomeDeductions.pension.residentTax' },
+  { key: 'insuranceLS', fullPath: 'incomeDeductions.insuranceL.incomeTax' },
+  { key: 'insuranceLJ', fullPath: 'incomeDeductions.insuranceL.residentTax' },
+  { key: 'insuranceES', fullPath: 'incomeDeductions.insuranceE.incomeTax' },
+  { key: 'insuranceEJ', fullPath: 'incomeDeductions.insuranceE.residentTax' },
+  { key: 'donationsS', fullPath: 'incomeDeductions.donations.incomeTax' },
+  //{ key: 'donationsJ', fullPath: 'incomeDeductions.donations.residentTax' },
+];
+const taxCreditsMappings: MappingEntry[] = [
+  { key: 'dividendS', fullPath: 'taxCredits.dividend.incomeTax' },
+  { key: 'dividendJ', fullPath: 'taxCredits.dividend.residentTax' },
+  { key: 'loanS', fullPath: 'taxCredits.loans.incomeTax' },
+  { key: 'loanJ', fullPath: 'taxCredits.loans.residentTax' },
+  { key: 'donationsS', fullPath: 'taxCredits.donations.incomeTax' },
+  { key: 'donationsJ', fullPath: 'taxCredits.donations.residentTax' },
+  { key: 'improvementHouseS', fullPath: 'taxCredits.improvementHouse.incomeTax' },
+  { key: 'disasterReductionS', fullPath: 'taxCredits.disasterReduction.incomeTax' },
+  { key: 'foreignTaxS', fullPath: 'taxCredits.foreignTax.incomeTax' },
+  { key: 'foreignTaxJ', fullPath: 'taxCredits.foreignTax.residentTax' },
+  { key: 'withholdingDividendCreditJ', fullPath: 'taxCredits.withholdingDividendCredit.incomeTax' },
+  { key: 'withholdingStockCreditJ', fullPath: 'taxCredits.withholdingStockCredit.residentTax' },
+];
+const taxMappings: MappingEntry[] = [
+  { key: 'incomeIncomeTax', fullPath: 'tax.income.incomeTax' },
+  { key: 'incomeResidentTax', fullPath: 'tax.income.residentTax' },
+  { key: 'deductionIncomeTax', fullPath: 'tax.deduction.incomeTax' },
+  { key: 'deductionResidentTax', fullPath: 'tax.deduction.residentTax' },
+  { key: 'taxableIncomeTax', fullPath: 'tax.taxable.incomeTax' },
+  { key: 'taxableResidentTax', fullPath: 'tax.taxable.residentTax' },
+  { key: 'taxPreIncomeTax', fullPath: 'tax.taxPre.incomeTax' },
+  { key: 'taxPreResidentTax', fullPath: 'tax.taxPre.residentTax' },
+  { key: 'taxPreCityTax', fullPath: 'tax.taxPre.cityTax' },
+  { key: 'taxPrePrefTax', fullPath: 'tax.taxPre.prefTax' },
+  { key: 'taxCreditIncomeTax', fullPath: 'tax.taxCredit.incomeTax' },
+  { key: 'taxCreditResidentTax', fullPath: 'tax.taxCredit.residentTax' },
+  { key: 'taxCreditCityTax', fullPath: 'tax.taxCredit.cityTax' },
+  { key: 'taxCreditPrefTax', fullPath: 'tax.taxCredit.prefTax' },
+  { key: 'taxVarIncomeTax', fullPath: 'tax.taxVar.incomeTax' },
+  { key: 'taxVarResidentTax', fullPath: 'tax.taxVar.residentTax' },
+  { key: 'taxVarCityTax', fullPath: 'tax.taxVar.cityTax' },
+  { key: 'taxVarPrefTax', fullPath: 'tax.taxVar.prefTax' },
+  //{ key: 'taxFixedIncomeTax', fullPath: 'tax.taxFixed.incomeTax' },
+  { key: 'taxFixedResidentTax', fullPath: 'tax.taxFixed.residentTax' },
+  { key: 'taxFixedCityTax', fullPath: 'tax.taxFixed.cityTax' },
+  { key: 'taxFixedPrefTax', fullPath: 'tax.taxFixed.prefTax' },
+  { key: 'taxFixedEcoTax', fullPath: 'tax.taxFixed.ecoTax' },
+  { key: 'taxFinalIncomeTax', fullPath: 'tax.taxFinal.incomeTax' },
+  { key: 'taxFinalResidentTax', fullPath: 'tax.taxFinal.residentTax' },
+  { key: 'paidIncomeTax', fullPath: 'tax.paid.incomeTax' },
+  { key: 'paidResidentTax', fullPath: 'tax.paid.residentTax' },
+  { key: 'refundIncomeTax', fullPath: 'tax.refund.incomeTax' },
+  { key: 'refundResidentTax', fullPath: 'tax.refund.residentTax' },
 ];
 
-function createGetter(path: string): () => Value {
-  return new Function('profile', `return profile.${path};`).bind(null, profile);
+function createGetter(fullPath: string): () => Value {
+  const [dist, ...pathParts] = fullPath.split('.');
+  const path = pathParts.join('.');
+  return new Function('objectMappings', `return objectMappings['${dist}'].${path};`).bind(null, objectMappings);
 }
 
-function createSetter(path: string, type: string): (value: Value) => void {
-  return new Function(
-    'profile',
-    'value',
-    `
-    if (typeof value === '${type}') {
-      profile.${path} = value;
-    } else {
-      throw new TypeError('Expected ${type}');
-    }
-  `
-  ).bind(null, profile);
+function createSetter(fullPath: string): (value: Value) => void {
+  const [dist, ...pathParts] = fullPath.split('.');
+  const path = pathParts.join('.');
+  return new Function('objectMappings', 'value', `objectMappings['${dist}'].${path} = value;`).bind(
+    null,
+    objectMappings
+  );
 }
 
 function createObjectMapping<T>(getter: () => T, setter: (value: T) => void): (value: Value) => T {
@@ -63,906 +219,24 @@ function createObjectMapping<T>(getter: () => T, setter: (value: T) => void): (v
   };
 }
 
-const profileMapping: { [key: string]: (value: Value) => Value } = mappings.reduce(
-  (acc, mapping) => {
-    const getter = createGetter(mapping.path);
-    const setter = createSetter(mapping.path, mapping.type);
-    acc[mapping.key] = createObjectMapping(getter, setter);
-    return acc;
-  },
-  {} as { [key: string]: (value: Value) => Value }
-);
+function createMapping(mappings: MappingEntry[]): { [key: string]: (value: Value) => Value } {
+  return mappings.reduce(
+    (acc, mapping) => {
+      const getter = createGetter(mapping.fullPath);
+      const setter = createSetter(mapping.fullPath);
+      acc[mapping.key] = createObjectMapping(getter, setter);
+      return acc;
+    },
+    {} as { [key: string]: (value: Value) => Value }
+  );
+}
 
-/*
-const profileMapping: { [key: string]: (value: Value) => Value } = {
-  applicantBirthYear: createObjectMapping(
-    () => profile.applicant.year,
-    (value: number) => {
-      profile.applicant.year = value;
-    }
-  ),
-  applicantSpouse: createObjectMapping(
-    () => profile.applicant.attributes.hasSpouse,
-    (value: boolean) => {
-      profile.applicant.attributes.hasSpouse = value;
-    }
-  ),
-  applicantIncomeSalary: createObjectMapping(
-    () => profile.applicant.income.salary,
-    (value: Currency) => {
-      profile.applicant.income.salary = value;
-    }
-  ),
-  applicantIncomeOther: createObjectMapping(
-    () => profile.applicant.income.other,
-    (value: Currency) => {
-      profile.applicant.income.other = value;
-    }
-  ),
-  applicantTaxableSalary: createObjectMapping(
-    () => profile.applicant.taxable.salary,
-    (value: Currency) => {
-      profile.applicant.taxable.salary = value;
-    }
-  ),
-  applicantTaxableOther: createObjectMapping(
-    () => profile.applicant.taxable.other,
-    (value: Currency) => {
-      profile.applicant.taxable.other = value;
-    }
-  ),
-  // 他のマッピングも追加可能
-  applicantAttributesMinors: createObjectMapping(
-    () => profile.applicant.attributes.minors,
-    (value: boolean) => {
-      profile.applicant.attributes.minors = value;
-    }
-  ),
-  applicantAttributesDisability: createObjectMapping(
-    () => profile.applicant.attributes.disability,
-    (value: number) => {
-      profile.applicant.attributes.disability = value;
-    }
-  ),
-  applicantAttributesSingleP: createObjectMapping(
-    () => profile.applicant.attributes.single,
-    (value: number) => {
-      profile.applicant.attributes.single = value;
-    }
-  ),
-  applicantAttributesStudent: createObjectMapping(
-    () => profile.applicant.attributes.student,
-    (value: number) => {
-      profile.applicant.attributes.student = value;
-    }
-  ),
-  spouseBirthYear: createObjectMapping(
-    () => profile.spouse.year,
-    (value: number) => {
-      profile.spouse.year = value;
-    }
-  ),
-  spouseIncomeSalary: createObjectMapping(
-    () => profile.spouse.income.salary,
-    (value: Currency) => {
-      profile.spouse.income.salary = value;
-    }
-  ),
-  spouseIncomeOther: createObjectMapping(
-    () => profile.spouse.income.other,
-    (value: Currency) => {
-      profile.spouse.income.other = value;
-    }
-  ),
-  spouseTaxableSalary: createObjectMapping(
-    () => profile.spouse.taxable.salary,
-    (value: Currency) => {
-      profile.spouse.taxable.salary = value;
-    }
-  ),
-  spouseTaxableOther: createObjectMapping(
-    () => profile.spouse.taxable.other,
-    (value: Currency) => {
-      profile.spouse.taxable.other = value;
-    }
-  ),
-  dependentSpecified: createObjectMapping(
-    () => profile.dependent.specified,
-    (value: number) => {
-      profile.dependent.specified = value;
-    }
-  ),
-  dependentElderlyLt: createObjectMapping(
-    () => profile.dependent.elderlyLt,
-    (value: number) => {
-      profile.dependent.elderlyLt = value;
-    }
-  ),
-  dependentElderly: createObjectMapping(
-    () => profile.dependent.elderly,
-    (value: number) => {
-      profile.dependent.elderly = value;
-    }
-  ),
-  dependentChild: createObjectMapping(
-    () => profile.dependent.child,
-    (value: number) => {
-      profile.dependent.child = value;
-    }
-  ),
-  dependentOther: createObjectMapping(
-    () => profile.dependent.other,
-    (value: number) => {
-      profile.dependent.other = value;
-    }
-  ),
-  dependentDisabilityLt: createObjectMapping(
-    () => profile.dependent.disabilityLt,
-    (value: number) => {
-      profile.dependent.disabilityLt = value;
-    }
-  ),
-  dependentDisabilityP: createObjectMapping(
-    () => profile.dependent.disabilityP,
-    (value: number) => {
-      profile.dependent.disabilityP = value;
-    }
-  ),
-  dependentDisabilityO: createObjectMapping(
-    () => profile.dependent.disabilityO,
-    (value: number) => {
-      profile.dependent.disabilityO = value;
-    }
-  ),
-  estateHouseYear: createObjectMapping(
-    () => profile.estate.house.year,
-    (value: number) => {
-      profile.estate.house.year = value;
-    }
-  ),
-  estateHouseMonth: createObjectMapping(
-    () => profile.estate.house.month,
-    (value: number) => {
-      profile.estate.house.month = value;
-    }
-  ),
-  estateHousePrice: createObjectMapping(
-    () => profile.estate.house.price,
-    (value: Currency) => {
-      profile.estate.house.price = value;
-    }
-  ),
-  estateHouseResident: createObjectMapping(
-    () => profile.estate.house.resident,
-    (value: number) => {
-      profile.estate.house.resident = value;
-    }
-  ),
-  estateHouseDebt: createObjectMapping(
-    () => profile.estate.house.debt,
-    (value: number) => {
-      profile.estate.house.debt = value;
-    }
-  ),
-  estateLandYear: createObjectMapping(
-    () => profile.estate.land.year,
-    (value: number) => {
-      profile.estate.land.year = value;
-    }
-  ),
-  estateLandMonth: createObjectMapping(
-    () => profile.estate.land.month,
-    (value: number) => {
-      profile.estate.land.month = value;
-    }
-  ),
-  estateLandPrice: createObjectMapping(
-    () => profile.estate.land.price,
-    (value: Currency) => {
-      profile.estate.land.price = value;
-    }
-  ),
-  estateLandResident: createObjectMapping(
-    () => profile.estate.land.resident,
-    (value: number) => {
-      profile.estate.land.resident = value;
-    }
-  ),
-  estateLandDebt: createObjectMapping(
-    () => profile.estate.land.debt,
-    (value: number) => {
-      profile.estate.land.debt = value;
-    }
-  ),
-  estateRenovationYear: createObjectMapping(
-    () => profile.estate.renovation.year,
-    (value: number) => {
-      profile.estate.renovation.year = value;
-    }
-  ),
-  estateRenovationMonth: createObjectMapping(
-    () => profile.estate.renovation.month,
-    (value: number) => {
-      profile.estate.renovation.month = value;
-    }
-  ),
-  estateRenovationPrice: createObjectMapping(
-    () => profile.estate.renovation.price,
-    (value: Currency) => {
-      profile.estate.renovation.price = value;
-    }
-  ),
-  estateRenovationPriceSp: createObjectMapping(
-    () => profile.estate.renovation.priceSp,
-    (value: Currency) => {
-      profile.estate.renovation.priceSp = value;
-    }
-  ),
-  estateRenovationResident: createObjectMapping(
-    () => profile.estate.renovation.resident,
-    (value: number) => {
-      profile.estate.renovation.resident = value;
-    }
-  ),
-  estateRenovationDebt: createObjectMapping(
-    () => profile.estate.renovation.debt,
-    (value: number) => {
-      profile.estate.renovation.debt = value;
-    }
-  ),
-  estateLoanBalance: createObjectMapping(
-    () => profile.estate.loan.balance,
-    (value: Currency) => {
-      profile.estate.loan.balance = value;
-    }
-  ),
-  estateCaseQuality: createObjectMapping(
-    () => profile.estate.case.quality,
-    (value: number) => {
-      profile.estate.case.quality = value;
-    }
-  ),
-  estateCaseSalesTax: createObjectMapping(
-    () => profile.estate.case.salesTax,
-    (value: number) => {
-      profile.estate.case.salesTax = value;
-    }
-  ),
-  estateCaseApplyResidentTax: createObjectMapping(
-    () => profile.estate.case.applyResidentTax,
-    (value: boolean) => {
-      profile.estate.case.applyResidentTax = value;
-    }
-  ),
-  estateCaseSpH19: createObjectMapping(
-    () => profile.estate.case.spH19,
-    (value: boolean) => {
-      profile.estate.case.spH19 = value;
-    }
-  ),
-  estateCaseSpR1: createObjectMapping(
-    () => profile.estate.case.spR1,
-    (value: boolean) => {
-      profile.estate.case.spR1 = value;
-    }
-  ),
-  estateCaseCovid19: createObjectMapping(
-    () => profile.estate.case.covid19,
-    (value: boolean) => {
-      profile.estate.case.covid19 = value;
-    }
-  ),
-  estateCaseSpR3: createObjectMapping(
-    () => profile.estate.case.spR3,
-    (value: boolean) => {
-      profile.estate.case.spR3 = value;
-    }
-  ),
-  estateCaseSmall: createObjectMapping(
-    () => profile.estate.case.small,
-    (value: boolean) => {
-      profile.estate.case.small = value;
-    }
-  ),
-  estateCaseParenting: createObjectMapping(
-    () => profile.estate.case.parenting,
-    (value: boolean) => {
-      profile.estate.case.parenting = value;
-    }
-  ),
-  estateCaseSpR6: createObjectMapping(
-    () => profile.estate.case.spR6,
-    (value: boolean) => {
-      profile.estate.case.spR6 = value;
-    }
-  ),
-};
-*/
-
-const deductionInputMapping: { [key: string]: (value: Value) => Value } = {
-  lossCasualtyLoss: createObjectMapping(
-    () => deductionInput.loss.casualtyLoss,
-    (value: Currency) => {
-      deductionInput.loss.casualtyLoss = value;
-    }
-  ),
-  lossDisasterReduction: createObjectMapping(
-    () => deductionInput.loss.disasterReduction,
-    (value: Currency) => {
-      deductionInput.loss.disasterReduction = value;
-    }
-  ),
-  socialInsurance: createObjectMapping(
-    () => deductionInput.social.insurance,
-    (value: Currency) => {
-      deductionInput.social.insurance = value;
-    }
-  ),
-  socialMutualAid: createObjectMapping(
-    () => deductionInput.social.mutualAid,
-    (value: Currency) => {
-      deductionInput.social.mutualAid = value;
-    }
-  ),
-  insuranceLifeNew: createObjectMapping(
-    () => deductionInput.insurance.lifeNew,
-    (value: Currency) => {
-      deductionInput.insurance.lifeNew = value;
-    }
-  ),
-  insuranceLifeOld: createObjectMapping(
-    () => deductionInput.insurance.lifeOld,
-    (value: Currency) => {
-      deductionInput.insurance.lifeOld = value;
-    }
-  ),
-  insuranceHealth: createObjectMapping(
-    () => deductionInput.insurance.health,
-    (value: Currency) => {
-      deductionInput.insurance.health = value;
-    }
-  ),
-  insuranceAnnuityNew: createObjectMapping(
-    () => deductionInput.insurance.annuityNew,
-    (value: Currency) => {
-      deductionInput.insurance.annuityNew = value;
-    }
-  ),
-  insuranceAnnuityOld: createObjectMapping(
-    () => deductionInput.insurance.annuityOld,
-    (value: Currency) => {
-      deductionInput.insurance.annuityOld = value;
-    }
-  ),
-  insuranceQuakeInsuranceOld: createObjectMapping(
-    () => deductionInput.insurance.quakeOld,
-    (value: Currency) => {
-      deductionInput.insurance.quakeOld = value;
-    }
-  ),
-  insuranceQuakeInsuranceNew: createObjectMapping(
-    () => deductionInput.insurance.quakeNew,
-    (value: Currency) => {
-      deductionInput.insurance.quakeNew = value;
-    }
-  ),
-  medicalExpenses: createObjectMapping(
-    () => deductionInput.medical.expenses,
-    (value: Currency) => {
-      deductionInput.medical.expenses = value;
-    }
-  ),
-  housingLoan: createObjectMapping(
-    () => deductionInput.housing.loans,
-    (value: Currency) => {
-      deductionInput.housing.loans = value;
-    }
-  ),
-  housingImprovementHouse: createObjectMapping(
-    () => deductionInput.housing.improvement,
-    (value: Currency) => {
-      deductionInput.housing.improvement = value;
-    }
-  ),
-  donationsHometownTax: createObjectMapping(
-    () => deductionInput.donations.hometownTax,
-    (value: Currency) => {
-      deductionInput.donations.hometownTax = value;
-    }
-  ),
-  donationsCommunityChest: createObjectMapping(
-    () => deductionInput.donations.communityChest,
-    (value: Currency) => {
-      deductionInput.donations.communityChest = value;
-    }
-  ),
-  donationsDonationByPref: createObjectMapping(
-    () => deductionInput.donations.pref,
-    (value: Currency) => {
-      deductionInput.donations.pref = value;
-    }
-  ),
-  donationsDonationByCity: createObjectMapping(
-    () => deductionInput.donations.city,
-    (value: Currency) => {
-      deductionInput.donations.city = value;
-    }
-  ),
-  donationsDonationOther: createObjectMapping(
-    () => deductionInput.donations.other,
-    (value: Currency) => {
-      deductionInput.donations.other = value;
-    }
-  ),
-  donationsContributions: createObjectMapping(
-    () => deductionInput.donations.politics,
-    (value: Currency) => {
-      deductionInput.donations.politics = value;
-    }
-  ),
-  donationsApplyOneStop: createObjectMapping(
-    () => deductionInput.donations.applyOneStop,
-    (value: boolean) => {
-      deductionInput.donations.applyOneStop = value;
-    }
-  ),
-  donationsApplyContributions: createObjectMapping(
-    () => deductionInput.donations.applyPolitics,
-    (value: boolean) => {
-      deductionInput.donations.applyPolitics = value;
-    }
-  ),
-  withholdingSalary: createObjectMapping(
-    () => deductionInput.withholding.salary,
-    (value: Currency) => {
-      deductionInput.withholding.salary = value;
-    }
-  ),
-  withholdingStockS: createObjectMapping(
-    () => deductionInput.withholding.stockS,
-    (value: Currency) => {
-      deductionInput.withholding.stockS = value;
-    }
-  ),
-  withholdingStockJ: createObjectMapping(
-    () => deductionInput.withholding.stockJ,
-    (value: Currency) => {
-      deductionInput.withholding.stockJ = value;
-    }
-  ),
-  withholdingDividendS: createObjectMapping(
-    () => deductionInput.withholding.dividendS,
-    (value: Currency) => {
-      deductionInput.withholding.dividendS = value;
-    }
-  ),
-  withholdingDividendJ: createObjectMapping(
-    () => deductionInput.withholding.dividendJ,
-    (value: Currency) => {
-      deductionInput.withholding.dividendJ = value;
-    }
-  ),
-  withholdingNonResidents: createObjectMapping(
-    () => deductionInput.withholding.nonResidents,
-    (value: Currency) => {
-      deductionInput.withholding.nonResidents = value;
-    }
-  ),
-  otherDividend: createObjectMapping(
-    () => deductionInput.other.dividend,
-    (value: Currency) => {
-      deductionInput.other.dividend = value;
-    }
-  ),
-  otherUnlistedStocks: createObjectMapping(
-    () => deductionInput.other.unlistedStocks,
-    (value: Currency) => {
-      deductionInput.other.unlistedStocks = value;
-    }
-  ),
-  otherForeignTax: createObjectMapping(
-    () => deductionInput.other.foreignTax,
-    (value: Currency) => {
-      deductionInput.other.foreignTax = value;
-    }
-  ),
-  taxReturnDoTaxReturn: createObjectMapping(
-    () => deductionInput.taxReturn.apply,
-    (value: boolean) => {
-      deductionInput.taxReturn.apply = value;
-    }
-  ),
-  taxReturnMethodS: createObjectMapping(
-    () => deductionInput.taxReturn.methodS,
-    (value: number) => {
-      deductionInput.taxReturn.methodS = value;
-    }
-  ),
-  taxReturnMethodJ: createObjectMapping(
-    () => deductionInput.taxReturn.methodJ,
-    (value: number) => {
-      deductionInput.taxReturn.methodJ = value;
-    }
-  ),
-};
-
-const incomeDeductionsMapping: { [key: string]: (value: Value) => Value } = {
-  casualtyLossS: createObjectMapping(
-    () => incomeDeductions.casualtyLoss.incomeTax,
-    (value: Currency) => {
-      incomeDeductions.casualtyLoss.incomeTax = value;
-    }
-  ),
-  casualtyLossJ: createObjectMapping(
-    () => incomeDeductions.casualtyLoss.residentTax,
-    (value: Currency) => {
-      incomeDeductions.casualtyLoss.residentTax = value;
-    }
-  ),
-  medicalS: createObjectMapping(
-    () => incomeDeductions.medical.incomeTax,
-    (value: Currency) => {
-      incomeDeductions.medical.incomeTax = value;
-    }
-  ),
-  medicalJ: createObjectMapping(
-    () => incomeDeductions.medical.residentTax,
-    (value: Currency) => {
-      incomeDeductions.medical.residentTax = value;
-    }
-  ),
-  socialS: createObjectMapping(
-    () => incomeDeductions.social.incomeTax,
-    (value: Currency) => {
-      incomeDeductions.social.incomeTax = value;
-    }
-  ),
-  socialJ: createObjectMapping(
-    () => incomeDeductions.social.residentTax,
-    (value: Currency) => {
-      incomeDeductions.social.residentTax = value;
-    }
-  ),
-  pensionS: createObjectMapping(
-    () => incomeDeductions.pension.incomeTax,
-    (value: Currency) => {
-      incomeDeductions.pension.incomeTax = value;
-    }
-  ),
-  pensionJ: createObjectMapping(
-    () => incomeDeductions.pension.residentTax,
-    (value: Currency) => {
-      incomeDeductions.pension.residentTax = value;
-    }
-  ),
-  insuranceLS: createObjectMapping(
-    () => incomeDeductions.insuranceL.incomeTax,
-    (value: Currency) => {
-      incomeDeductions.insuranceL.incomeTax = value;
-    }
-  ),
-  insuranceLJ: createObjectMapping(
-    () => incomeDeductions.insuranceL.residentTax,
-    (value: Currency) => {
-      incomeDeductions.insuranceL.residentTax = value;
-    }
-  ),
-  insuranceES: createObjectMapping(
-    () => incomeDeductions.insuranceE.incomeTax,
-    (value: Currency) => {
-      incomeDeductions.insuranceE.incomeTax = value;
-    }
-  ),
-  insuranceEJ: createObjectMapping(
-    () => incomeDeductions.insuranceE.residentTax,
-    (value: Currency) => {
-      incomeDeductions.insuranceE.residentTax = value;
-    }
-  ),
-  donationsS: createObjectMapping(
-    () => incomeDeductions.donations.incomeTax,
-    (value: Currency) => {
-      incomeDeductions.donations.incomeTax = value;
-    }
-  ),
-};
-
-const personalDeductionsMapping: { [key: string]: (value: Value) => Value } = {
-  personalS: createObjectMapping(
-    () => personalDeductions.personal.incomeTax,
-    (value: Currency) => {
-      personalDeductions.personal.incomeTax = value;
-    }
-  ),
-  personalJ: createObjectMapping(
-    () => personalDeductions.personal.residentTax,
-    (value: Currency) => {
-      personalDeductions.personal.residentTax = value;
-    }
-  ),
-  spouseS: createObjectMapping(
-    () => personalDeductions.spouse.incomeTax,
-    (value: Currency) => {
-      personalDeductions.spouse.incomeTax = value;
-    }
-  ),
-  spouseJ: createObjectMapping(
-    () => personalDeductions.spouse.residentTax,
-    (value: Currency) => {
-      personalDeductions.spouse.residentTax = value;
-    }
-  ),
-  dependentS: createObjectMapping(
-    () => personalDeductions.dependent.incomeTax,
-    (value: Currency) => {
-      personalDeductions.dependent.incomeTax = value;
-    }
-  ),
-  dependentJ: createObjectMapping(
-    () => personalDeductions.dependent.residentTax,
-    (value: Currency) => {
-      personalDeductions.dependent.residentTax = value;
-    }
-  ),
-  basicS: createObjectMapping(
-    () => personalDeductions.basic.incomeTax,
-    (value: Currency) => {
-      personalDeductions.basic.incomeTax = value;
-    }
-  ),
-  basicJ: createObjectMapping(
-    () => personalDeductions.basic.residentTax,
-    (value: Currency) => {
-      personalDeductions.basic.residentTax = value;
-    }
-  ),
-};
-
-const taxCreditsMapping: { [key: string]: (value: Value) => Value } = {
-  dividendS: createObjectMapping(
-    () => taxCredits.dividend.incomeTax,
-    (value: Currency) => {
-      taxCredits.dividend.incomeTax = value;
-    }
-  ),
-  dividendJ: createObjectMapping(
-    () => taxCredits.dividend.residentTax,
-    (value: Currency) => {
-      taxCredits.dividend.residentTax = value;
-    }
-  ),
-  loansS: createObjectMapping(
-    () => taxCredits.loans.incomeTax,
-    (value: Currency) => {
-      taxCredits.loans.incomeTax = value;
-    }
-  ),
-  loansJ: createObjectMapping(
-    () => taxCredits.loans.residentTax,
-    (value: Currency) => {
-      taxCredits.loans.residentTax = value;
-    }
-  ),
-  donationsCreditS: createObjectMapping(
-    () => taxCredits.donations.incomeTax,
-    (value: Currency) => {
-      taxCredits.donations.incomeTax = value;
-    }
-  ),
-  donationsCreditJ: createObjectMapping(
-    () => taxCredits.donations.residentTax,
-    (value: Currency) => {
-      taxCredits.donations.residentTax = value;
-    }
-  ),
-  improvementHouseS: createObjectMapping(
-    () => taxCredits.improvementHouse.incomeTax,
-    (value: Currency) => {
-      taxCredits.improvementHouse.incomeTax = value;
-    }
-  ),
-  disasterReductionS: createObjectMapping(
-    () => taxCredits.disasterReduction.incomeTax,
-    (value: Currency) => {
-      taxCredits.disasterReduction.incomeTax = value;
-    }
-  ),
-  foreignTaxS: createObjectMapping(
-    () => taxCredits.foreignTax.incomeTax,
-    (value: Currency) => {
-      taxCredits.foreignTax.incomeTax = value;
-    }
-  ),
-  foreignTaxJ: createObjectMapping(
-    () => taxCredits.foreignTax.residentTax,
-    (value: Currency) => {
-      taxCredits.foreignTax.residentTax = value;
-    }
-  ),
-  withholdingDividendCreditJ: createObjectMapping(
-    () => taxCredits.withholdingDividendCredit.residentTax,
-    (value: Currency) => {
-      taxCredits.withholdingDividendCredit.residentTax = value;
-    }
-  ),
-  withholdingStockCreditJ: createObjectMapping(
-    () => taxCredits.withholdingStockCredit.residentTax,
-    (value: Currency) => {
-      taxCredits.withholdingStockCredit.residentTax = value;
-    }
-  ),
-};
-
-const taxMapping: { [key: string]: (value: Value) => Value } = {
-  incomeIncomeTax: createObjectMapping(
-    () => tax.income.incomeTax,
-    (value: Currency) => {
-      tax.income.incomeTax = value;
-    }
-  ),
-  incomeResidentTax: createObjectMapping(
-    () => tax.income.residentTax,
-    (value: Currency) => {
-      tax.income.residentTax = value;
-    }
-  ),
-  deductionIncomeTax: createObjectMapping(
-    () => tax.deduction.incomeTax,
-    (value: Currency) => {
-      tax.deduction.incomeTax = value;
-    }
-  ),
-  deductionResidentTax: createObjectMapping(
-    () => tax.deduction.residentTax,
-    (value: Currency) => {
-      tax.deduction.residentTax = value;
-    }
-  ),
-  taxableIncomeTax: createObjectMapping(
-    () => tax.taxable.incomeTax,
-    (value: Currency) => {
-      tax.taxable.incomeTax = value;
-    }
-  ),
-  taxableResidentTax: createObjectMapping(
-    () => tax.taxable.residentTax,
-    (value: Currency) => {
-      tax.taxable.residentTax = value;
-    }
-  ),
-  taxPreIncomeTax: createObjectMapping(
-    () => tax.taxPre.incomeTax,
-    (value: Currency) => {
-      tax.taxPre.incomeTax = value;
-    }
-  ),
-  taxPreResidentTax: createObjectMapping(
-    () => tax.taxPre.residentTax,
-    (value: Currency) => {
-      tax.taxPre.residentTax = value;
-    }
-  ),
-  taxPreCityTax: createObjectMapping(
-    () => tax.taxPre.cityTax,
-    (value: Currency) => {
-      tax.taxPre.cityTax = value;
-    }
-  ),
-  taxPrePrefTax: createObjectMapping(
-    () => tax.taxPre.prefTax,
-    (value: Currency) => {
-      tax.taxPre.prefTax = value;
-    }
-  ),
-  taxCreditIncomeTax: createObjectMapping(
-    () => tax.taxCredit.incomeTax,
-    (value: Currency) => {
-      tax.taxCredit.incomeTax = value;
-    }
-  ),
-  taxCreditResidentTax: createObjectMapping(
-    () => tax.taxCredit.residentTax,
-    (value: Currency) => {
-      tax.taxCredit.residentTax = value;
-    }
-  ),
-  taxCreditCityTax: createObjectMapping(
-    () => tax.taxCredit.cityTax,
-    (value: Currency) => {
-      tax.taxCredit.cityTax = value;
-    }
-  ),
-  taxCreditPrefTax: createObjectMapping(
-    () => tax.taxCredit.prefTax,
-    (value: Currency) => {
-      tax.taxCredit.prefTax = value;
-    }
-  ),
-  taxVarIncomeTax: createObjectMapping(
-    () => tax.taxVar.incomeTax,
-    (value: Currency) => {
-      tax.taxVar.incomeTax = value;
-    }
-  ),
-  taxVarResidentTax: createObjectMapping(
-    () => tax.taxVar.residentTax,
-    (value: Currency) => {
-      tax.taxVar.residentTax = value;
-    }
-  ),
-  taxVarCityTax: createObjectMapping(
-    () => tax.taxVar.cityTax,
-    (value: Currency) => {
-      tax.taxVar.cityTax = value;
-    }
-  ),
-  taxVarPrefTax: createObjectMapping(
-    () => tax.taxVar.prefTax,
-    (value: Currency) => {
-      tax.taxVar.prefTax = value;
-    }
-  ),
-  taxFixedResidentTax: createObjectMapping(
-    () => tax.taxFixed.residentTax,
-    (value: Currency) => {
-      tax.taxFixed.residentTax = value;
-    }
-  ),
-  taxFixedCityTax: createObjectMapping(
-    () => tax.taxFixed.cityTax,
-    (value: Currency) => {
-      tax.taxFixed.cityTax = value;
-    }
-  ),
-  taxFixedPrefTax: createObjectMapping(
-    () => tax.taxFixed.prefTax,
-    (value: Currency) => {
-      tax.taxFixed.prefTax = value;
-    }
-  ),
-  taxFixedEcoTax: createObjectMapping(
-    () => tax.taxFixed.ecoTax,
-    (value: Currency) => {
-      tax.taxFixed.ecoTax = value;
-    }
-  ),
-  taxFinalIncomeTax: createObjectMapping(
-    () => tax.taxFinal.incomeTax,
-    (value: Currency) => {
-      tax.taxFinal.incomeTax = value;
-    }
-  ),
-  taxFinalResidentTax: createObjectMapping(
-    () => tax.taxFinal.residentTax,
-    (value: Currency) => {
-      tax.taxFinal.residentTax = value;
-    }
-  ),
-  paidIncomeTax: createObjectMapping(
-    () => tax.paid.incomeTax,
-    (value: Currency) => {
-      tax.paid.incomeTax = value;
-    }
-  ),
-  paidResidentTax: createObjectMapping(
-    () => tax.paid.residentTax,
-    (value: Currency) => {
-      tax.paid.residentTax = value;
-    }
-  ),
-  refundIncomeTax: createObjectMapping(
-    () => tax.refund.incomeTax,
-    (value: Currency) => {
-      tax.refund.incomeTax = value;
-    }
-  ),
-  refundResidentTax: createObjectMapping(
-    () => tax.refund.residentTax,
-    (value: Currency) => {
-      tax.refund.residentTax = value;
-    }
-  ),
-};
+const profileMapping = createMapping(profileMappings);
+const deductionInputMapping = createMapping(deductionInputMappings);
+const personalDeductionsMapping = createMapping(personalDeductionsMappings);
+const incomeDeductionsMapping = createMapping(incomeDeductionsMappings);
+const taxCreditsMapping = createMapping(taxCreditsMappings);
+const taxMapping = createMapping(taxMappings);
 
 type Mapping = { [key: string]: (value: Value) => Value };
 
@@ -986,46 +260,35 @@ function createHtmlElements(mapping: Mapping): HtmlElements {
 }
 
 const profileElements: HtmlElements = createHtmlElements(profileMapping);
-export const deductionInputElements: HtmlElements = createHtmlElements(deductionInputMapping);
-export const incomeDeductionsElements: HtmlElements = createHtmlElements(incomeDeductionsMapping);
-export const personalDeductionsElements: HtmlElements = createHtmlElements(personalDeductionsMapping);
-export const taxCreditsElements: HtmlElements = createHtmlElements(taxCreditsMapping);
-export const taxElements: HtmlElements = createHtmlElements(taxMapping);
-/*
-function isCurrency(value: Value): value is Currency {
-  return typeof value === 'object' && value !== null && 'amount' in value;
-}
-  */
+const deductionInputElements: HtmlElements = createHtmlElements(deductionInputMapping);
+const incomeDeductionsElements: HtmlElements = createHtmlElements(incomeDeductionsMapping);
+const personalDeductionsElements: HtmlElements = createHtmlElements(personalDeductionsMapping);
+const taxCreditsElements: HtmlElements = createHtmlElements(taxCreditsMapping);
+const taxElements: HtmlElements = createHtmlElements(taxMapping);
 
-export function updateValue(element: HtmlElement) {
+function updateValue(element: HtmlElement) {
   let newValue: Value = element.element?.value || '';
   if (element.element?.type === 'checkbox') {
     newValue = element.element.checked;
   }
   const value = element.value();
-  //console.log('value:', value);
-  //console.log(typeof value);
 
   if (typeof value === 'number' && typeof newValue === 'string') {
-    //console.log('update number');
     const parsedValue = parseInt(newValue, 10);
     if (!isNaN(parsedValue)) {
       element.value(parsedValue);
     }
   } else if (typeof value === 'object' && typeof newValue === 'string') {
-    //console.log('update Currency');
     const parsedValue = setCurrency(newValue);
     element.value(parsedValue);
   } else if (typeof value === 'boolean' && typeof newValue === 'boolean') {
-    //console.log('update boolean');
     element.value(newValue === true);
   } else if (typeof value === 'string') {
-    //console.log('update string');
     element.value(newValue || '');
   }
 }
 
-export function setValue(element: HTMLInputElement | HTMLLabelElement | null, value: Value) {
+function setValue(element: HTMLInputElement | HTMLLabelElement | null, value: Value) {
   if (element instanceof HTMLLabelElement) {
     if (element && typeof value === 'object' && value !== null && 'amount' in value) {
       return (element.textContent = CurrencyToString(value) || '');
@@ -1043,7 +306,7 @@ export function setValue(element: HTMLInputElement | HTMLLabelElement | null, va
   }
 }
 
-export function getHtmlElements(elements: HtmlElements) {
+function getHtmlElements(elements: HtmlElements) {
   for (const key in elements) {
     if (elements[key] && typeof elements[key] === 'object') {
       const element = elements[key] as HtmlElement;
@@ -1054,10 +317,7 @@ export function getHtmlElements(elements: HtmlElements) {
   }
 }
 
-export function setHtmlElements(elements: HtmlElements) {
-  //const keysToProcess = ['applicantTaxableSalary'];
-  //console.log('keysToProcess:', keysToProcess);
-  //keysToProcess.forEach((key) => {
+function setHtmlElements(elements: HtmlElements) {
   for (const key in elements) {
     if (elements[key] && typeof elements[key] === 'object') {
       const element = elements[key] as HtmlElement;
@@ -1088,12 +348,6 @@ export function getDeductionInput() {
   getHtmlElements(deductionInputElements);
   console.log('deductionInput:', deductionInput);
 }
-
-/*
-export function getTax() {
-  getHtmlElements(taxElements);
-}
-*/
 
 export function setDeductionInput() {
   return setHtmlElements(deductionInputElements);
