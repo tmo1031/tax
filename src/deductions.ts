@@ -1,3 +1,3 @@
-export function calcDeductions() {
+export function setDeductions() {
   return;
 }

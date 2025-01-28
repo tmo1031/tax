@@ -38,7 +38,7 @@ export type TaxType = {
   refund: ExtendedTaxDetails;
 };
 
-type Income = {
+export type Income = {
   salary: Currency;
   pension: Currency;
   other: Currency;

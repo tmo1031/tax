@@ -1,7 +1,7 @@
 import { Profile, Contract, profile } from './objects.js';
 
-export function handleTaxYearChange(id: string) {
-  console.log(`Tax Year changed: ${id}`);
+export function handleTaxYearChange() {
+  //console.log(`Tax Year changed: ${id}`);
   updateJapaneseYear();
 }
 
@@ -29,8 +29,8 @@ export function updateJapaneseYear() {
   }
 }
 
-export function handleYearChange(id: string) {
-  console.log(`Year changed: ${id}`);
+export function handleYearChange() {
+  //console.log(`Year changed: ${id}`);
   const taxYearElement = document.getElementById('taxYear') as HTMLInputElement | null;
   const birthYearElement = document.getElementById('applicantBirthYear') as HTMLInputElement | null;
   const birthYearSElement = document.getElementById('spouseBirthYear') as HTMLInputElement | null;
@@ -102,9 +102,9 @@ export function handleYearChange(id: string) {
   }
 }
 
-export function handleHasSpouseChange(id: string) {
+export function handleHasSpouseChange() {
   // 配偶者の有無によって配偶者の入力を有効化を切り替える
-  console.log(`Has Spouse changed: ${id}`);
+  //console.log(`Has Spouse changed: ${id}`);
   const spouseCheckElement = document.getElementById('applicantSpouse') as HTMLInputElement | null;
   const spouseElement = document.getElementById('spouse') as HTMLDivElement | null;
   if (spouseCheckElement && spouseElement) {
@@ -115,8 +115,8 @@ export function handleHasSpouseChange(id: string) {
   }
 }
 
-export function handleLoanSelectChange(id: string) {
-  console.log(`Loan Select changed: ${id}`);
+export function handleLoanSelectChange() {
+  //console.log(`Loan Select changed: ${id}`);
   // ローンの有無で表示を切り替える
   const loanSelectElement = document.getElementById('LoanSelect') as HTMLSelectElement | null;
   const houseElement = document.getElementById('house') as HTMLDivElement | null;
@@ -132,18 +132,63 @@ export function handleLoanSelectChange(id: string) {
   }
 }
 
-export function handleIncomeChange(id: string) {
-  console.log(`Income changed: ${id}`);
+export function handleIncomeChange() {
+  //console.log(`Income changed: ${id}`);
   // updateIncome();
   // 収入によって寡婦/勤労学生の有効化を切り替える
 }
 
-export function handleDependentChange(id: string) {
-  console.log(`Dependent changed: ${id}`);
+export function handleDependentChange() {
+  //console.log(`Dependent changed: ${id}`);
   // updateDependent();
   // 扶養家族の有無によって寡婦の有効化を切り替える
 }
 
 function updateAge(age: number, profile: Profile | Contract) {
   profile.age = age;
+}
+
+const taxYearIds = ['taxYear'];
+const yearIds = ['taxYear', 'applicantBirthYear', 'spouseBirthYear', 'moveInYear', 'renovYear'];
+const hasSpouseIds = ['applicantSpouse'];
+const loanSelectIDs = ['LoanSelect'];
+const incomeIds = ['incomeSalary', 'taxableOther'];
+const dependentIds = [
+  'dependentSpecified',
+  'dependentElderlyLT',
+  'dependentElderly',
+  'dependentChild',
+  'dependentOther',
+  'dependentDisabilityLT',
+  'dependentDisabilityP',
+  'dependentDisabilityO',
+];
+
+export function allSpecialEvents() {
+  const allIds = [...taxYearIds, ...yearIds, ...hasSpouseIds, ...loanSelectIDs, ...incomeIds, ...dependentIds];
+  allIds.forEach((id) => {
+    specialEvents(id);
+  });
+}
+
+export function specialEvents(id: string) {
+  //console.log(`Special events: ${id}`);
+  if (taxYearIds.includes(id)) {
+    updateJapaneseYear();
+  }
+  if (yearIds.includes(id)) {
+    handleYearChange();
+  }
+  if (hasSpouseIds.includes(id)) {
+    handleHasSpouseChange();
+  }
+  if (loanSelectIDs.includes(id)) {
+    handleLoanSelectChange();
+  }
+  if (incomeIds.includes(id)) {
+    handleIncomeChange();
+  }
+  if (dependentIds.includes(id)) {
+    handleDependentChange();
+  }
 }

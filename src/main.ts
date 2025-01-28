@@ -1,84 +1,124 @@
-import {
-  updateJapaneseYear,
-  handleYearChange,
-  handleHasSpouseChange,
-  handleLoanSelectChange,
-  handleIncomeChange,
-  handleDependentChange,
-} from './events.js';
-import { getTaxYear, getProfile, getDeductionInput, showProfile, showTax } from './io.js';
-import { getTaxable } from './taxable.js';
-import { calcDeductions } from './deductions.js';
-import { calcTax } from './tax.js';
+import { specialEvents } from './events.js';
+import { updateJapaneseYear, allSpecialEvents } from './events.js';
+import { getTaxYear, getProfile, getDeductionInput, setProfile, showTax } from './io.js';
+import { setTaxable } from './taxable.js';
+import { setDeductions } from './deductions.js';
+import { setTax } from './tax.js';
 
-export function initialize() {
-  console.log('initialize');
-  updateJapaneseYear();
-  getTaxYear();
-  getProfile();
-  getDeductionInput();
-  allSpecialEvents();
-  getTaxable();
-  showProfile();
-  calcDeductions();
-  calcTax();
-  showTax();
-}
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('DOMContentLoaded');
 
-export function refresh() {
-  console.log('refresh');
-  updateJapaneseYear();
-  getTaxYear();
-  getProfile();
-  getDeductionInput();
-  getTaxable();
-  showProfile();
-  calcDeductions();
-  calcTax();
-  showTax();
-}
-
-const taxYearIds = ['taxYear'];
-const yearIds = ['taxYear', 'applicantBirthYear', 'spouseBirthYear', 'moveInYear', 'renovYear'];
-const hasSpouseIds = ['applicantSpouse'];
-const loanSelectIDs = ['LoanSelect'];
-const incomeIds = ['incomeSalary', 'taxableOther'];
-const dependentIds = [
-  'dependentSpecified',
-  'dependentElderlyLT',
-  'dependentElderly',
-  'dependentChild',
-  'dependentOther',
-  'dependentDisabilityLT',
-  'dependentDisabilityP',
-  'dependentDisabilityO',
-];
-
-function allSpecialEvents() {
-  const allIds = [...taxYearIds, ...yearIds, ...hasSpouseIds, ...loanSelectIDs, ...incomeIds, ...dependentIds];
-  allIds.forEach((id) => {
-    specialEvents(id);
+  // 数字のみ入力を許可するイベントリスナーを設定
+  document.querySelectorAll<HTMLInputElement>('.just-num').forEach((element) => {
+    element.addEventListener('keypress', (e) => {
+      const charCode = e.which ? e.which : e.keyCode;
+      if (typeof charCode === 'number' && charCode > 31 && (charCode < 48 || charCode > 57)) {
+        e.preventDefault();
+      }
+    });
   });
+
+  // カンマ区切りの入力を処理するイベントリスナーを設定
+  document.querySelectorAll<HTMLInputElement>('.currency-input').forEach((element) => {
+    element.addEventListener('input', (e) => {
+      const target = e.target as HTMLInputElement;
+      let val = target.value;
+      val = val.replace(/,/g, '');
+      if (val.length > 3) {
+        const noCommas = Math.ceil(val.length / 3) - 1;
+        const remain = val.length - noCommas * 3;
+        const newVal: string[] = [];
+        for (let i = 0; i < noCommas; i++) {
+          newVal.unshift(val.substring(val.length - i * 3 - 3, val.length - i * 3));
+        }
+        newVal.unshift(val.substring(0, remain));
+        target.value = newVal.join(',');
+      } else {
+        target.value = val;
+      }
+    });
+  });
+
+  // すべての入力要素を取得
+  const inputs = document.querySelectorAll<HTMLInputElement>('input');
+  const selects = document.querySelectorAll<HTMLSelectElement>('select');
+  const radios = document.querySelectorAll<HTMLInputElement>('input[type="radio"]');
+  //const checkboxes = document.querySelectorAll<HTMLInputElement>('input[type="checkbox"]');
+  //const buttons = document.querySelectorAll<HTMLButtonElement>('button');
+
+  // 各入力要素にイベントリスナーを追加
+  inputs.forEach((input) => {
+    input.addEventListener('input', (event) => {
+      const target = event.target as HTMLInputElement;
+      //console.log(`Input changed: ID=${target.id}, Value=${target.value}`);
+      specialEvents(target.id);
+      refresh();
+    });
+  });
+
+  // 各セレクト要素にイベントリスナーを追加
+  selects.forEach((select) => {
+    select.addEventListener('change', (event) => {
+      const target = event.target as HTMLSelectElement;
+      //console.log(`Select changed: ID=${target.id}, Value=${target.value}`);
+      specialEvents(target.id);
+      refresh();
+    });
+  });
+
+  // 各ラジオボタンにイベントリスナーを追加
+  radios.forEach((radio) => {
+    radio.addEventListener('change', (event) => {
+      const target = event.target as HTMLInputElement;
+      console.log(`Radio changed: Name=${target.name}, Value=${target.value}`);
+      specialEvents(target.id);
+      refresh();
+    });
+  });
+
+  /*   // 各チェックボックスにイベントリスナーを追加
+  checkboxes.forEach((checkbox) => {
+    checkbox.addEventListener('change', (event) => {
+      const target = event.target as HTMLInputElement;
+      console.log(`Checkbox changed: ID=${target.id}, Checked=${target.checked}`);
+      specialEvents(target.id);
+    });
+  });
+ */
+  // 各ボタンにイベントリスナーを追加
+  // buttons.forEach((button) => {
+  //   button.addEventListener('click', (event) => {
+  //     const target = event.target as HTMLButtonElement;
+  //     console.log(`Button clicked: ID=${target.id}, Text=${target.textContent}`);
+  //   });
+  // });
+
+  // ロード時の処理
+  initialize();
+});
+
+function initialize() {
+  console.log('initialize');
+  updateJapaneseYear(); //初期化で呼び出す
+  getTaxYear();
+  getProfile();
+  getDeductionInput();
+  allSpecialEvents(); //初期化で呼び出す
+  setTaxable();
+  setProfile();
+  setDeductions();
+  setTax();
+  showTax();
 }
 
-export function specialEvents(id: string) {
-  //console.log(`Special events: ${id}`);
-  if (taxYearIds.includes(id)) {
-    updateJapaneseYear();
-  }
-  if (yearIds.includes(id)) {
-    handleYearChange(id);
-  }
-  if (hasSpouseIds.includes(id)) {
-    handleHasSpouseChange(id);
-  }
-  if (loanSelectIDs.includes(id)) {
-    handleLoanSelectChange(id);
-  }
-  if (incomeIds.includes(id)) {
-    handleIncomeChange(id);
-  }
-  if (dependentIds.includes(id)) {
-    handleDependentChange(id);
-  }
+function refresh() {
+  console.log('refresh');
+  getTaxYear();
+  getProfile();
+  getDeductionInput();
+  setTaxable();
+  setProfile();
+  setDeductions();
+  setTax();
+  showTax();
 }
