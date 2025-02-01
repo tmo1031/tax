@@ -1,7 +1,16 @@
 import { system } from './objects.js';
-import { profile, deductionInput, incomeDeductions, personalDeductions, taxCredits, tax } from './objects.js';
+import {
+  profile,
+  deductionInput,
+  taxReturn,
+  incomeDeductions,
+  personalDeductions,
+  taxCredits,
+  tax,
+} from './objects.js';
 import { Currency } from './objects.js';
 import { CurrencyToString } from './functions.js';
+//import { get } from 'jquery';
 
 type Value = number | string | boolean | Currency | null;
 
@@ -23,6 +32,7 @@ type MappingEntry = {
 const objectMappings = {
   profile,
   deductionInput,
+  taxReturn,
   incomeDeductions,
   personalDeductions,
   taxCredits,
@@ -108,8 +118,6 @@ const deductionInputMappings: MappingEntry[] = [
   { key: 'donationsDonationByCity', fullPath: 'deductionInput.donations.city' },
   { key: 'donationsDonationOther', fullPath: 'deductionInput.donations.other' },
   { key: 'donationsContributions', fullPath: 'deductionInput.donations.politics' },
-  { key: 'donationsApplyOneStop', fullPath: 'deductionInput.donations.applyOneStop' },
-  { key: 'donationsApplyContributions', fullPath: 'deductionInput.donations.applyPolitics' },
   { key: 'withholdingSalary', fullPath: 'deductionInput.withholding.salary' },
   { key: 'withholdingStockS', fullPath: 'deductionInput.withholding.stockS' },
   { key: 'withholdingStockJ', fullPath: 'deductionInput.withholding.stockJ' },
@@ -119,9 +127,13 @@ const deductionInputMappings: MappingEntry[] = [
   { key: 'otherDividend', fullPath: 'deductionInput.other.dividend' },
   { key: 'otherUnlistedStocks', fullPath: 'deductionInput.other.unlistedStocks' },
   { key: 'otherForeignTax', fullPath: 'deductionInput.other.foreignTax' },
-  { key: 'taxReturnDoTaxReturn', fullPath: 'deductionInput.taxReturn.apply' },
-  { key: 'taxReturnMethodS', fullPath: 'deductionInput.taxReturn.methodS' },
-  { key: 'taxReturnMethodJ', fullPath: 'deductionInput.taxReturn.methodJ' },
+];
+const taxReturnMappings: MappingEntry[] = [
+  { key: 'donationsApplyOneStop', fullPath: 'taxReturn.applyOneStop' },
+  { key: 'donationsApplyContributions', fullPath: 'taxReturn.applyPolitics' },
+  { key: 'taxReturnDoTaxReturn', fullPath: 'taxReturn.apply' },
+  { key: 'taxReturnMethodS', fullPath: 'taxReturn.methodS' },
+  { key: 'taxReturnMethodJ', fullPath: 'taxReturn.methodJ' },
 ];
 const personalDeductionsMappings: MappingEntry[] = [
   { key: 'personalS', fullPath: 'personalDeductions.personal.incomeTax' },
@@ -233,6 +245,7 @@ function createMapping(mappings: MappingEntry[]): { [key: string]: (value: Value
 
 const profileMapping = createMapping(profileMappings);
 const deductionInputMapping = createMapping(deductionInputMappings);
+const taxReturnMapping = createMapping(taxReturnMappings);
 const personalDeductionsMapping = createMapping(personalDeductionsMappings);
 const incomeDeductionsMapping = createMapping(incomeDeductionsMappings);
 const taxCreditsMapping = createMapping(taxCreditsMappings);
@@ -261,6 +274,7 @@ function createHtmlElements(mapping: Mapping): HtmlElements {
 
 const profileElements: HtmlElements = createHtmlElements(profileMapping);
 const deductionInputElements: HtmlElements = createHtmlElements(deductionInputMapping);
+const taxReturnElements: HtmlElements = createHtmlElements(taxReturnMapping);
 const incomeDeductionsElements: HtmlElements = createHtmlElements(incomeDeductionsMapping);
 const personalDeductionsElements: HtmlElements = createHtmlElements(personalDeductionsMapping);
 const taxCreditsElements: HtmlElements = createHtmlElements(taxCreditsMapping);
@@ -348,6 +362,7 @@ export function setProfile() {
 
 export function getDeductionInput() {
   getHtmlElements(deductionInputElements);
+  getHtmlElements(taxReturnElements);
   //console.log('deductionInput:', deductionInput);
 }
 

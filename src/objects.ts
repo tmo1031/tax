@@ -2,47 +2,17 @@ export type Currency = {
   amount: number;
 };
 
-type System = {
-  taxYear: number;
+export type TaxSystem = {
+  rate: Record<string, number>;
+  adjustment: Record<string, Currency>;
+  fixed: Record<string, Currency>;
 };
 
-export type ProfileType = {
+export type Profiles = {
   applicant: Profile;
   spouse: Profile;
   dependent: Dependent;
   estate: Estate;
-};
-
-export type DeductionInputType = {
-  loss: Loss;
-  social: Social;
-  insurance: Insurance;
-  medical: Medical;
-  housing: Housing;
-  donations: Donations;
-  withholding: Withholding;
-  other: Other;
-  taxReturn: TaxReturn;
-};
-
-export type TaxType = {
-  income: ExtendedTaxDetails;
-  deduction: ExtendedTaxDetails;
-  taxable: ExtendedTaxDetails;
-  taxPre: ExtendedTaxDetails;
-  taxCredit: ExtendedTaxDetails;
-  taxVar: ExtendedTaxDetails;
-  taxFixed: ExtendedTaxDetails;
-  taxFinal: ExtendedTaxDetails;
-  paid: ExtendedTaxDetails;
-  refund: ExtendedTaxDetails;
-};
-
-export type Income = {
-  salary: Currency;
-  pension: Currency;
-  other: Currency;
-  total: Currency;
 };
 
 type Attributes = {
@@ -56,21 +26,12 @@ type Attributes = {
 export type Profile = {
   year: number;
   age: number;
-  income: Income;
-  taxable: Income;
+  income: Record<string, Currency>;
+  taxable: Record<string, Currency>;
   attributes: Attributes;
 };
 
-type Dependent = {
-  specified: number;
-  elderlyLt: number;
-  elderly: number;
-  child: number;
-  other: number;
-  disabilityLt: number;
-  disabilityP: number;
-  disabilityO: number;
-};
+type Dependent = Record<string, number>;
 
 export type Contract = {
   year: number;
@@ -96,7 +57,7 @@ type Case = {
   spR6: boolean; //令和6年度税制改正での一般住宅への救済措置
 };
 
-type Estate = {
+export type Estate = {
   house: Contract;
   land: Contract;
   renovation: Contract;
@@ -104,96 +65,18 @@ type Estate = {
   case: Case;
 };
 
-type Loss = {
-  casualtyLoss: Currency;
-  disasterReduction: Currency;
-};
-
-type Social = {
-  insurance: Currency;
-  mutualAid: Currency;
-};
-
-type Insurance = {
-  lifeNew: Currency;
-  lifeOld: Currency;
-  health: Currency;
-  annuityNew: Currency;
-  annuityOld: Currency;
-  quakeOld: Currency;
-  quakeNew: Currency;
-};
-
-type Medical = {
-  expenses: Currency;
-};
-
-type Housing = {
-  loans: Currency;
-  improvement: Currency;
-};
-
-type Donations = {
-  hometownTax: Currency;
-  communityChest: Currency;
-  pref: Currency;
-  city: Currency;
-  other: Currency;
-  politics: Currency;
+type TaxReturn = {
   applyOneStop: boolean;
   applyPolitics: boolean;
-};
-
-type Withholding = {
-  salary: Currency;
-  stockS: Currency;
-  stockJ: Currency;
-  dividendS: Currency;
-  dividendJ: Currency;
-  nonResidents: Currency;
-};
-
-type Other = {
-  dividend: Currency;
-  unlistedStocks: Currency;
-  foreignTax: Currency;
-};
-
-type TaxReturn = {
   apply: boolean;
   methodS: number;
   methodJ: number;
 };
 
-type DeductionInput = {
-  loss: Loss;
-  social: Social;
-  insurance: Insurance;
-  medical: Medical;
-  housing: Housing;
-  donations: Donations;
-  withholding: Withholding;
-  other: Other;
-  taxReturn: TaxReturn;
-};
-
-type TaxDetails = {
-  incomeTax: Currency;
-  residentTax: Currency;
-};
-
-type ExtendedTaxDetails = TaxDetails & {
-  cityTax: Currency;
-  prefTax: Currency;
-  ecoTax: Currency;
-};
-
 const createObject = <T>(template: T): T => ({ ...template });
 
-const createSystem = (): System => createObject<System>({ taxYear: 2024 });
-
-const createIncome = (): Income =>
-  createObject<Income>({
+const createIncome = () =>
+  createObject({
     salary: { amount: 0 },
     pension: { amount: 0 },
     other: { amount: 0 },
@@ -264,90 +147,31 @@ const createEstate = (): Estate =>
     case: createCase(),
   });
 
-const createLoss = (): Loss =>
-  createObject<Loss>({
-    casualtyLoss: { amount: 0 },
-    disasterReduction: { amount: 0 },
-  });
-
-const createSocial = (): Social =>
-  createObject<Social>({
-    insurance: { amount: 0 },
-    mutualAid: { amount: 0 },
-  });
-
-const createInsurance = (): Insurance =>
-  createObject<Insurance>({
-    lifeNew: { amount: 0 },
-    lifeOld: { amount: 0 },
-    health: { amount: 0 },
-    annuityNew: { amount: 0 },
-    annuityOld: { amount: 0 },
-    quakeOld: { amount: 0 },
-    quakeNew: { amount: 0 },
-  });
-
-const createMedical = (): Medical =>
-  createObject<Medical>({
-    expenses: { amount: 0 },
-  });
-
-const createHousing = (): Housing =>
-  createObject<Housing>({
-    loans: { amount: 0 },
-    improvement: { amount: 0 },
-  });
-
-const createDonations = (): Donations =>
-  createObject<Donations>({
-    hometownTax: { amount: 0 },
-    communityChest: { amount: 0 },
-    pref: { amount: 0 },
-    city: { amount: 0 },
-    other: { amount: 0 },
-    politics: { amount: 0 },
-    applyOneStop: false,
-    applyPolitics: false,
-  });
-
-const createWithholding = (): Withholding =>
-  createObject<Withholding>({
-    salary: { amount: 0 },
-    stockS: { amount: 0 },
-    stockJ: { amount: 0 },
-    dividendS: { amount: 0 },
-    dividendJ: { amount: 0 },
-    nonResidents: { amount: 0 },
-  });
-
-const createOther = (): Other =>
-  createObject<Other>({
-    dividend: { amount: 0 },
-    unlistedStocks: { amount: 0 },
-    foreignTax: { amount: 0 },
-  });
-
 const createTaxReturn = (): TaxReturn =>
   createObject<TaxReturn>({
+    applyOneStop: false,
+    applyPolitics: false,
     apply: false,
     methodS: 0,
     methodJ: 0,
   });
 
-const createTaxDetails = (): TaxDetails =>
-  createObject<TaxDetails>({
+const createTaxDetails = (): Record<string, Currency> => {
+  return {
     incomeTax: { amount: 0 },
     residentTax: { amount: 0 },
-  });
+  };
+};
 
-const createExtendedTaxDetails = (): ExtendedTaxDetails =>
-  createObject<ExtendedTaxDetails>({
+const createExtendedTaxDetails = (): Record<string, Currency> => {
+  return {
     incomeTax: { amount: 0 },
     residentTax: { amount: 0 },
     cityTax: { amount: 0 },
     prefTax: { amount: 0 },
     ecoTax: { amount: 0 },
-  });
+  };
+};
 
 export const profile = {
   applicant: createProfile(),
@@ -356,19 +180,57 @@ export const profile = {
   estate: createEstate(),
 };
 
-export const deductionInput: DeductionInput = {
-  loss: createLoss(),
-  social: createSocial(),
-  insurance: createInsurance(),
-  medical: createMedical(),
-  housing: createHousing(),
-  donations: createDonations(),
-  withholding: createWithholding(),
-  other: createOther(),
-  taxReturn: createTaxReturn(),
+export const deductionInput: Record<string, Record<string, Currency>> = {
+  loss: {
+    casualtyLoss: { amount: 0 },
+    disasterReduction: { amount: 0 },
+  },
+  social: {
+    insurance: { amount: 0 },
+    mutualAid: { amount: 0 },
+  },
+  insurance: {
+    lifeNew: { amount: 0 },
+    lifeOld: { amount: 0 },
+    health: { amount: 0 },
+    annuityNew: { amount: 0 },
+    annuityOld: { amount: 0 },
+    quakeOld: { amount: 0 },
+    quakeNew: { amount: 0 },
+  },
+  medical: {
+    expenses: { amount: 0 },
+  },
+  housing: {
+    loans: { amount: 0 },
+    improvement: { amount: 0 },
+  },
+  donations: {
+    hometownTax: { amount: 0 },
+    communityChest: { amount: 0 },
+    pref: { amount: 0 },
+    city: { amount: 0 },
+    other: { amount: 0 },
+    politics: { amount: 0 },
+  },
+  withholding: {
+    salary: { amount: 0 },
+    stockS: { amount: 0 },
+    stockJ: { amount: 0 },
+    dividendS: { amount: 0 },
+    dividendJ: { amount: 0 },
+    nonResidents: { amount: 0 },
+  },
+  other: {
+    dividend: { amount: 0 },
+    unlistedStocks: { amount: 0 },
+    foreignTax: { amount: 0 },
+  },
 };
 
-export const personalDeductions: Record<string, TaxDetails> = {
+export const taxReturn: TaxReturn = createTaxReturn();
+
+export const personalDeductions: Record<string, Record<string, Currency>> = {
   disability: createTaxDetails(),
   single: createTaxDetails(),
   student: createTaxDetails(),
@@ -378,7 +240,7 @@ export const personalDeductions: Record<string, TaxDetails> = {
   personal: createTaxDetails(),
 };
 
-export const incomeDeductions: Record<string, TaxDetails> = {
+export const incomeDeductions: Record<string, Record<string, Currency>> = {
   casualtyLoss: createTaxDetails(),
   medical: createTaxDetails(),
   social: createTaxDetails(),
@@ -388,7 +250,7 @@ export const incomeDeductions: Record<string, TaxDetails> = {
   donations: createTaxDetails(),
 };
 
-export const taxCredits: Record<string, TaxDetails> = {
+export const taxCredits: Record<string, Record<string, Currency>> = {
   dividend: createTaxDetails(),
   loans: createTaxDetails(),
   donations: createTaxDetails(), // 政党等寄附金等は寄付金控除とマージ
@@ -399,16 +261,17 @@ export const taxCredits: Record<string, TaxDetails> = {
   withholdingStockCredit: createTaxDetails(),
 };
 
-export const paid: Record<string, TaxDetails> = {
+export const paid: Record<string, Record<string, Currency>> = {
   withholdings: createTaxDetails(),
   nonResidents: createTaxDetails(),
 };
 
-export const tax = {
+export const tax: Record<string, Record<string, Currency>> = {
   income: createExtendedTaxDetails(),
   deduction: createExtendedTaxDetails(),
   taxable: createExtendedTaxDetails(),
   taxPre: createExtendedTaxDetails(),
+  taxPreAlt: createExtendedTaxDetails(),
   taxCredit: createExtendedTaxDetails(),
   taxVar: createExtendedTaxDetails(),
   taxFixed: createExtendedTaxDetails(),
@@ -417,4 +280,4 @@ export const tax = {
   refund: createExtendedTaxDetails(),
 };
 
-export const system: System = createSystem();
+export const system = createObject({ taxYear: 2024 });
