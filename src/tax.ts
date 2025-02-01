@@ -69,7 +69,7 @@ export function calcTax() {
   }
   function calcTaxPre() {
     console.log('calcTaxPre');
-    tax.taxPre.incomeTax = roundCurrency(multiplyCurrency(tax.taxable.incomeTax, taxSystem.rate.incomeTax), 1);
+    tax.taxPre.incomeTax = roundCurrency(multiplyCurrency(tax.taxable.incomeTax, taxSystem.rate.incomeTax), 100);
     tax.taxPre.cityTax = multiplyCurrency(tax.taxable.residentTax, taxSystem.rate.cityTax);
     tax.taxPre.prefTax = multiplyCurrency(tax.taxable.residentTax, taxSystem.rate.prefTax);
     tax.taxPre.residentTax = sumCurrency(tax.taxPre.cityTax, tax.taxPre.prefTax);
