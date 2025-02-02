@@ -13,6 +13,7 @@ export type Profiles = {
   spouse: Profile;
   dependent: Dependent;
   estate: Estate;
+  nonTaxable: Record<string, boolean>;
 };
 
 type Attributes = {
@@ -20,7 +21,7 @@ type Attributes = {
   minors: boolean;
   disability: number;
   single: number;
-  student: number;
+  student: boolean;
 };
 
 export type Profile = {
@@ -65,7 +66,7 @@ export type Estate = {
   case: Case;
 };
 
-type TaxReturn = {
+export type TaxReturn = {
   applyOneStop: boolean;
   applyPolitics: boolean;
   apply: boolean;
@@ -77,10 +78,23 @@ const createObject = <T>(template: T): T => ({ ...template });
 
 const createIncome = () =>
   createObject({
+    interest: { amount: 0 },
+    dividend: { amount: 0 },
+    realProperty: { amount: 0 },
+    business: { amount: 0 },
     salary: { amount: 0 },
-    pension: { amount: 0 },
+    misc: { amount: 0 },
+    occasional: { amount: 0 },
+    capitalGains: { amount: 0 },
+    capitalGainsEstate: { amount: 0 },
+    dividendStock: { amount: 0 },
+    capitalGainsStock: { amount: 0 },
+    futures: { amount: 0 },
+    timber: { amount: 0 },
+    retirement: { amount: 0 },
     other: { amount: 0 },
     total: { amount: 0 },
+    carryOver: { amount: 0 },
   });
 
 const createAttributes = (): Attributes =>
@@ -89,7 +103,7 @@ const createAttributes = (): Attributes =>
     minors: false,
     disability: 0,
     single: 0,
-    student: 0,
+    student: false,
   });
 
 const createProfile = (): Profile =>
@@ -173,14 +187,34 @@ const createExtendedTaxDetails = (): Record<string, Currency> => {
   };
 };
 
-export const profile = {
+export const profiles = {
   applicant: createProfile(),
   spouse: createProfile(),
   dependent: createDependent(),
   estate: createEstate(),
+  nonTaxable: {
+    var: false,
+    fixed: false,
+    final: false,
+  },
 };
 
-export const deductionInput: Record<string, Record<string, Currency>> = {
+export const carryOvers: Record<string, Currency> = {
+  interest: { amount: 0 },
+  dividend: { amount: 0 },
+  realProperty: { amount: 0 },
+  business: { amount: 0 },
+  misc: { amount: 0 },
+  capitalGains: { amount: 0 },
+  capitalGainsEstate: { amount: 0 },
+  dividendStock: { amount: 0 },
+  capitalGainsStock: { amount: 0 },
+  futures: { amount: 0 },
+  timber: { amount: 0 },
+  loss: { amount: 0 },
+};
+
+export const deductionInputs: Record<string, Record<string, Currency>> = {
   loss: {
     casualtyLoss: { amount: 0 },
     disasterReduction: { amount: 0 },

@@ -1,6 +1,6 @@
 import { specialEvents } from './events.js';
 import { updateJapaneseYear, allSpecialEvents } from './events.js';
-import { getTaxYear, getProfile, getDeductionInput, setProfile, showTax } from './io.js';
+import { getInputs, setProfiles, showTax } from './io.js';
 import { setTaxable } from './taxable.js';
 import { setDeductions } from './deductions.js';
 import { setTax } from './tax.js';
@@ -100,12 +100,10 @@ document.addEventListener('DOMContentLoaded', () => {
 function initialize() {
   console.log('initialize');
   updateJapaneseYear(); //初期化で呼び出す
-  getTaxYear();
-  getProfile();
-  getDeductionInput();
+  getInputs();
   allSpecialEvents(); //初期化で呼び出す
   setTaxable();
-  setProfile();
+  setProfiles();
   setDeductions();
   setTax();
   showTax();
@@ -113,11 +111,9 @@ function initialize() {
 
 function refresh() {
   console.log('refresh');
-  getTaxYear();
-  getProfile();
-  getDeductionInput();
+  getInputs();
   setTaxable();
-  setProfile();
+  setProfiles();
   setDeductions();
   setTax();
   showTax();

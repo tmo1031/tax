@@ -1,4 +1,4 @@
-import { Profile, Contract, profile } from './objects.js';
+import { Profile, Contract, profiles } from './objects.js';
 
 export function handleTaxYearChange() {
   //console.log(`Tax Year changed: ${id}`);
@@ -58,11 +58,11 @@ export function handleYearChange() {
     const ageS = taxYear - birthYearS;
     const moveInAge = taxYear - moveInYear;
     const renovAge = taxYear - renovYear;
-    updateAge(age, profile.applicant);
-    updateAge(ageS, profile.spouse);
-    updateAge(moveInAge, profile.estate.house);
-    updateAge(moveInAge, profile.estate.land);
-    updateAge(renovAge, profile.estate.renovation);
+    updateAge(age, profiles.applicant);
+    updateAge(ageS, profiles.spouse);
+    updateAge(moveInAge, profiles.estate.house);
+    updateAge(moveInAge, profiles.estate.land);
+    updateAge(renovAge, profiles.estate.renovation);
   }
   if (taxYearElement && birthYearElement && minorsElement) {
     // 年度によって未成年者へのチェックボックスを有効化を切り替える

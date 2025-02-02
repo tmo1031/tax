@@ -1,6 +1,6 @@
 import {
-  profile,
-  deductionInput,
+  profiles,
+  deductionInputs,
   personalDeductions,
   incomeDeductions,
   taxCredits,
@@ -29,9 +29,9 @@ export function calcTax() {
 
   function calcIncomeTax() {
     console.log('calcIncomeTax');
-    console.log('profile:', profile);
-    tax.income.incomeTax = profile.applicant.taxable.total;
-    tax.income.residentTax = profile.applicant.taxable.total;
+    console.log('profile:', profiles);
+    tax.income.incomeTax = profiles.applicant.taxable.total;
+    tax.income.residentTax = profiles.applicant.taxable.total;
   }
   function calcDeduction() {
     console.log('calcDeduction');
@@ -69,9 +69,10 @@ export function calcTax() {
   }
   function calcTaxPre() {
     console.log('calcTaxPre');
+    const nonTaxable = profiles.nonTaxable.final;
     tax.taxPre.incomeTax = roundCurrency(multiplyCurrency(tax.taxable.incomeTax, taxSystem.rate.incomeTax), 100);
-    tax.taxPre.cityTax = multiplyCurrency(tax.taxable.residentTax, taxSystem.rate.cityTax);
-    tax.taxPre.prefTax = multiplyCurrency(tax.taxable.residentTax, taxSystem.rate.prefTax);
+    tax.taxPre.cityTax = nonTaxable ? { amount: 0 } : multiplyCurrency(tax.taxable.residentTax, taxSystem.rate.cityTax);
+    tax.taxPre.prefTax = nonTaxable ? { amount: 0 } : multiplyCurrency(tax.taxable.residentTax, taxSystem.rate.prefTax);
     tax.taxPre.residentTax = sumCurrency(tax.taxPre.cityTax, tax.taxPre.prefTax);
   }
   /*
@@ -87,22 +88,22 @@ export function calcTax() {
 
   function getTaxCredits() {
     taxCredits.Dividend = getDividendCredit(taxYear); // 配当控除の計算が難しいので保留
-    const loanCredit = getLoansCreditPre(profile.estate, profile.applicant.taxable.total.amount);
+    const loanCredit = getLoansCreditPre(profiles.estate, profiles.applicant.taxable.total.amount);
     taxCredits.Loans = getLoansCredit(
       taxYear,
-      profile.estate,
-      profile.applicant.taxable.total.amount,
+      profiles.estate,
+      profiles.applicant.taxable.total.amount,
       loanCredit,
       tax.taxPre.incomeTax.amount,
       tax.taxPreAlt.incomeTax.amount
     );
     // 住宅取得と増改築の併用は保留
-    taxCredits.Donations = getDonationCredit(taxYear, deductionInput.donations);
-    taxCredits.ImprovementHouse = getImprovementCredit(taxYear, deductionInput.housing.improvement.amount);
-    taxCredits.DisasterReduction = getDisasterCredit(taxYear, deductionInput.loss.disasterReduction.amount);
-    taxCredits.ForeignTax = getForeignTaxCredit(taxYear, deductionInput.other.foreignTax.amount);
-    taxCredits.Withholding_Dividend = getDividendRefund(taxYear, deductionInput.withholding.dividendJ.amount);
-    taxCredits.Withholding_Stock = getStockRefund(taxYear, deductionInput.withholding.stockJ.amount);
+    taxCredits.Donations = getDonationCredit(taxYear, deductionInputs.donations);
+    taxCredits.ImprovementHouse = getImprovementCredit(taxYear, deductionInputs.housing.improvement.amount);
+    taxCredits.DisasterReduction = getDisasterCredit(taxYear, deductionInputs.loss.disasterReduction.amount);
+    taxCredits.ForeignTax = getForeignTaxCredit(taxYear, deductionInputs.other.foreignTax.amount);
+    taxCredits.Withholding_Dividend = getDividendRefund(taxYear, deductionInputs.withholding.dividendJ.amount);
+    taxCredits.Withholding_Stock = getStockRefund(taxYear, deductionInputs.withholding.stockJ.amount);
     console.log('taxCredits:', taxCredits);
   }
 
@@ -154,13 +155,21 @@ export function calcTax() {
 
   function calcTaxVar() {
     console.log('calcTaxVar');
+    const nonTaxable = profiles.nonTaxable.final || profiles.nonTaxable.var;
     tax.taxVar = calcTaxDetails(tax.taxPre, tax.taxCredit, subtractCurrency);
+    if (nonTaxable) {
+      tax.taxVar.cityTax = { amount: 0 };
+      tax.taxVar.prefTax = { amount: 0 };
+      tax.taxVar.ecoTax = { amount: 0 };
+      tax.taxVar.residentTax = { amount: 0 };
+    }
   }
   function calcTaxFixed() {
     console.log('calcTaxFixed');
-    tax.taxFixed.cityTax = taxSystem.fixed.cityTax;
-    tax.taxFixed.prefTax = taxSystem.fixed.prefTax;
-    tax.taxFixed.ecoTax = taxSystem.fixed.ecoTax;
+    const nonTaxable = profiles.nonTaxable.final || profiles.nonTaxable.fixed;
+    tax.taxFixed.cityTax = nonTaxable ? { amount: 0 } : taxSystem.fixed.cityTax;
+    tax.taxFixed.prefTax = nonTaxable ? { amount: 0 } : taxSystem.fixed.prefTax;
+    tax.taxFixed.ecoTax = nonTaxable ? { amount: 0 } : taxSystem.fixed.ecoTax;
     tax.taxFixed.residentTax = sumCurrency(tax.taxFixed.cityTax, tax.taxFixed.prefTax, tax.taxFixed.ecoTax);
   }
   function calcTaxFinal() {

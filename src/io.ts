@@ -1,7 +1,8 @@
 import { system } from './objects.js';
 import {
-  profile,
-  deductionInput,
+  profiles,
+  deductionInputs,
+  carryOvers,
   taxReturn,
   incomeDeductions,
   personalDeductions,
@@ -30,8 +31,8 @@ type MappingEntry = {
 };
 
 const objectMappings = {
-  profile,
-  deductionInput,
+  profiles,
+  deductionInputs,
   taxReturn,
   incomeDeductions,
   personalDeductions,
@@ -46,87 +47,87 @@ function setCurrency(value: string): Currency {
 const getElement = (id: string): HTMLInputElement | null => document.getElementById(id) as HTMLInputElement | null;
 
 const profileMappings: MappingEntry[] = [
-  { key: 'applicantBirthYear', fullPath: 'profile.applicant.year' },
-  { key: 'applicantSpouse', fullPath: 'profile.applicant.attributes.hasSpouse' },
-  { key: 'applicantIncomeSalary', fullPath: 'profile.applicant.income.salary' },
-  { key: 'applicantIncomeOther', fullPath: 'profile.applicant.income.other' },
-  { key: 'applicantTaxableSalary', fullPath: 'profile.applicant.taxable.salary' },
-  { key: 'applicantTaxableOther', fullPath: 'profile.applicant.taxable.other' },
-  { key: 'applicantAttributesMinors', fullPath: 'profile.applicant.attributes.minors' },
-  { key: 'applicantAttributesDisability', fullPath: 'profile.applicant.attributes.disability' },
-  { key: 'applicantAttributesSingleP', fullPath: 'profile.applicant.attributes.single' },
-  { key: 'applicantAttributesStudent', fullPath: 'profile.applicant.attributes.student' },
-  { key: 'spouseBirthYear', fullPath: 'profile.spouse.year' },
-  { key: 'spouseIncomeSalary', fullPath: 'profile.spouse.income.salary' },
-  { key: 'spouseIncomeOther', fullPath: 'profile.spouse.income.other' },
-  { key: 'spouseTaxableSalary', fullPath: 'profile.spouse.taxable.salary' },
-  { key: 'spouseTaxableOther', fullPath: 'profile.spouse.taxable.other' },
-  { key: 'dependentSpecified', fullPath: 'profile.dependent.specified' },
-  { key: 'dependentElderlyLt', fullPath: 'profile.dependent.elderlyLt' },
-  { key: 'dependentElderly', fullPath: 'profile.dependent.elderly' },
-  { key: 'dependentChild', fullPath: 'profile.dependent.child' },
-  { key: 'dependentOther', fullPath: 'profile.dependent.other' },
-  { key: 'dependentDisabilityLt', fullPath: 'profile.dependent.disabilityLt' },
-  { key: 'dependentDisabilityP', fullPath: 'profile.dependent.disabilityP' },
-  { key: 'dependentDisabilityO', fullPath: 'profile.dependent.disabilityO' },
-  { key: 'estateHouseYear', fullPath: 'profile.estate.house.year' },
-  { key: 'estateHouseMonth', fullPath: 'profile.estate.house.month' },
-  { key: 'estateHousePrice', fullPath: 'profile.estate.house.price' },
-  { key: 'estateHouseResident', fullPath: 'profile.estate.house.resident' },
-  { key: 'estateHouseDebt', fullPath: 'profile.estate.house.debt' },
-  { key: 'estateLandYear', fullPath: 'profile.estate.land.year' },
-  { key: 'estateLandMonth', fullPath: 'profile.estate.land.month' },
-  { key: 'estateLandPrice', fullPath: 'profile.estate.land.price' },
-  { key: 'estateLandResident', fullPath: 'profile.estate.land.resident' },
-  { key: 'estateLandDebt', fullPath: 'profile.estate.land.debt' },
-  { key: 'estateRenovationYear', fullPath: 'profile.estate.renovation.year' },
-  { key: 'estateRenovationMonth', fullPath: 'profile.estate.renovation.month' },
-  { key: 'estateRenovationPrice', fullPath: 'profile.estate.renovation.price' },
-  { key: 'estateRenovationPriceSp', fullPath: 'profile.estate.renovation.priceSp' },
-  { key: 'estateRenovationResident', fullPath: 'profile.estate.renovation.resident' },
-  { key: 'estateRenovationDebt', fullPath: 'profile.estate.renovation.debt' },
-  { key: 'estateLoanBalance', fullPath: 'profile.estate.loan.balance' },
-  { key: 'estateCaseQuality', fullPath: 'profile.estate.case.quality' },
-  { key: 'estateCaseSalesTax', fullPath: 'profile.estate.case.salesTax' },
-  { key: 'estateCaseApplyResidentTax', fullPath: 'profile.estate.case.applyResidentTax' },
-  { key: 'estateCaseSpH19', fullPath: 'profile.estate.case.spH19' },
-  { key: 'estateCaseSpR1', fullPath: 'profile.estate.case.spR1' },
-  { key: 'estateCaseCovid19', fullPath: 'profile.estate.case.covid19' },
-  { key: 'estateCaseSpR3', fullPath: 'profile.estate.case.spR3' },
-  { key: 'estateCaseSmall', fullPath: 'profile.estate.case.small' },
-  { key: 'estateCaseParenting', fullPath: 'profile.estate.case.parenting' },
-  { key: 'estateCaseSpR6', fullPath: 'profile.estate.case.spR6' },
+  { key: 'applicantBirthYear', fullPath: 'profiles.applicant.year' },
+  { key: 'applicantSpouse', fullPath: 'profiles.applicant.attributes.hasSpouse' },
+  { key: 'applicantIncomeSalary', fullPath: 'profiles.applicant.income.salary' },
+  { key: 'applicantIncomeOther', fullPath: 'profiles.applicant.income.other' },
+  { key: 'applicantTaxableSalary', fullPath: 'profiles.applicant.taxable.salary' },
+  { key: 'applicantTaxableOther', fullPath: 'profiles.applicant.taxable.other' },
+  { key: 'applicantAttributesMinors', fullPath: 'profiles.applicant.attributes.minors' },
+  { key: 'applicantAttributesDisability', fullPath: 'profiles.applicant.attributes.disability' },
+  { key: 'applicantAttributesSingleP', fullPath: 'profiles.applicant.attributes.single' },
+  { key: 'applicantAttributesStudent', fullPath: 'profiles.applicant.attributes.student' },
+  { key: 'spouseBirthYear', fullPath: 'profiles.spouse.year' },
+  { key: 'spouseIncomeSalary', fullPath: 'profiles.spouse.income.salary' },
+  { key: 'spouseIncomeOther', fullPath: 'profiles.spouse.income.other' },
+  { key: 'spouseTaxableSalary', fullPath: 'profiles.spouse.taxable.salary' },
+  { key: 'spouseTaxableOther', fullPath: 'profiles.spouse.taxable.other' },
+  { key: 'dependentSpecified', fullPath: 'profiles.dependent.specified' },
+  { key: 'dependentElderlyLt', fullPath: 'profiles.dependent.elderlyLt' },
+  { key: 'dependentElderly', fullPath: 'profiles.dependent.elderly' },
+  { key: 'dependentChild', fullPath: 'profiles.dependent.child' },
+  { key: 'dependentOther', fullPath: 'profiles.dependent.other' },
+  { key: 'dependentDisabilityLt', fullPath: 'profiles.dependent.disabilityLt' },
+  { key: 'dependentDisabilityP', fullPath: 'profiles.dependent.disabilityP' },
+  { key: 'dependentDisabilityO', fullPath: 'profiles.dependent.disabilityO' },
+  { key: 'estateHouseYear', fullPath: 'profiles.estate.house.year' },
+  { key: 'estateHouseMonth', fullPath: 'profiles.estate.house.month' },
+  { key: 'estateHousePrice', fullPath: 'profiles.estate.house.price' },
+  { key: 'estateHouseResident', fullPath: 'profiles.estate.house.resident' },
+  { key: 'estateHouseDebt', fullPath: 'profiles.estate.house.debt' },
+  { key: 'estateLandYear', fullPath: 'profiles.estate.land.year' },
+  { key: 'estateLandMonth', fullPath: 'profiles.estate.land.month' },
+  { key: 'estateLandPrice', fullPath: 'profiles.estate.land.price' },
+  { key: 'estateLandResident', fullPath: 'profiles.estate.land.resident' },
+  { key: 'estateLandDebt', fullPath: 'profiles.estate.land.debt' },
+  { key: 'estateRenovationYear', fullPath: 'profiles.estate.renovation.year' },
+  { key: 'estateRenovationMonth', fullPath: 'profiles.estate.renovation.month' },
+  { key: 'estateRenovationPrice', fullPath: 'profiles.estate.renovation.price' },
+  { key: 'estateRenovationPriceSp', fullPath: 'profiles.estate.renovation.priceSp' },
+  { key: 'estateRenovationResident', fullPath: 'profiles.estate.renovation.resident' },
+  { key: 'estateRenovationDebt', fullPath: 'profiles.estate.renovation.debt' },
+  { key: 'estateLoanBalance', fullPath: 'profiles.estate.loan.balance' },
+  { key: 'estateCaseQuality', fullPath: 'profiles.estate.case.quality' },
+  { key: 'estateCaseSalesTax', fullPath: 'profiles.estate.case.salesTax' },
+  { key: 'estateCaseApplyResidentTax', fullPath: 'profiles.estate.case.applyResidentTax' },
+  { key: 'estateCaseSpH19', fullPath: 'profiles.estate.case.spH19' },
+  { key: 'estateCaseSpR1', fullPath: 'profiles.estate.case.spR1' },
+  { key: 'estateCaseCovid19', fullPath: 'profiles.estate.case.covid19' },
+  { key: 'estateCaseSpR3', fullPath: 'profiles.estate.case.spR3' },
+  { key: 'estateCaseSmall', fullPath: 'profiles.estate.case.small' },
+  { key: 'estateCaseParenting', fullPath: 'profiles.estate.case.parenting' },
+  { key: 'estateCaseSpR6', fullPath: 'profiles.estate.case.spR6' },
 ];
 const deductionInputMappings: MappingEntry[] = [
-  { key: 'lossCasualtyLoss', fullPath: 'deductionInput.loss.casualtyLoss' },
-  { key: 'lossDisasterReduction', fullPath: 'deductionInput.loss.disasterReduction' },
-  { key: 'socialInsurance', fullPath: 'deductionInput.social.insurance' },
-  { key: 'socialMutualAid', fullPath: 'deductionInput.social.mutualAid' },
-  { key: 'insuranceLifeNew', fullPath: 'deductionInput.insurance.lifeNew' },
-  { key: 'insuranceLifeOld', fullPath: 'deductionInput.insurance.lifeOld' },
-  { key: 'insuranceHealth', fullPath: 'deductionInput.insurance.health' },
-  { key: 'insuranceAnnuityNew', fullPath: 'deductionInput.insurance.annuityNew' },
-  { key: 'insuranceAnnuityOld', fullPath: 'deductionInput.insurance.annuityOld' },
-  { key: 'insuranceQuakeInsuranceOld', fullPath: 'deductionInput.insurance.quakeOld' },
-  { key: 'insuranceQuakeInsuranceNew', fullPath: 'deductionInput.insurance.quakeNew' },
-  { key: 'medicalExpenses', fullPath: 'deductionInput.medical.expenses' },
-  { key: 'housingLoan', fullPath: 'deductionInput.housing.loans' },
-  { key: 'housingImprovementHouse', fullPath: 'deductionInput.housing.improvement' },
-  { key: 'donationsHometownTax', fullPath: 'deductionInput.donations.hometownTax' },
-  { key: 'donationsCommunityChest', fullPath: 'deductionInput.donations.communityChest' },
-  { key: 'donationsDonationByPref', fullPath: 'deductionInput.donations.pref' },
-  { key: 'donationsDonationByCity', fullPath: 'deductionInput.donations.city' },
-  { key: 'donationsDonationOther', fullPath: 'deductionInput.donations.other' },
-  { key: 'donationsContributions', fullPath: 'deductionInput.donations.politics' },
-  { key: 'withholdingSalary', fullPath: 'deductionInput.withholding.salary' },
-  { key: 'withholdingStockS', fullPath: 'deductionInput.withholding.stockS' },
-  { key: 'withholdingStockJ', fullPath: 'deductionInput.withholding.stockJ' },
-  { key: 'withholdingDividendS', fullPath: 'deductionInput.withholding.dividendS' },
-  { key: 'withholdingDividendJ', fullPath: 'deductionInput.withholding.dividendJ' },
-  { key: 'withholdingNonResidents', fullPath: 'deductionInput.withholding.nonResidents' },
-  { key: 'otherDividend', fullPath: 'deductionInput.other.dividend' },
-  { key: 'otherUnlistedStocks', fullPath: 'deductionInput.other.unlistedStocks' },
-  { key: 'otherForeignTax', fullPath: 'deductionInput.other.foreignTax' },
+  { key: 'lossCasualtyLoss', fullPath: 'deductionInputs.loss.casualtyLoss' },
+  { key: 'lossDisasterReduction', fullPath: 'deductionInputs.loss.disasterReduction' },
+  { key: 'socialInsurance', fullPath: 'deductionInputs.social.insurance' },
+  { key: 'socialMutualAid', fullPath: 'deductionInputs.social.mutualAid' },
+  { key: 'insuranceLifeNew', fullPath: 'deductionInputs.insurance.lifeNew' },
+  { key: 'insuranceLifeOld', fullPath: 'deductionInputs.insurance.lifeOld' },
+  { key: 'insuranceHealth', fullPath: 'deductionInputs.insurance.health' },
+  { key: 'insuranceAnnuityNew', fullPath: 'deductionInputs.insurance.annuityNew' },
+  { key: 'insuranceAnnuityOld', fullPath: 'deductionInputs.insurance.annuityOld' },
+  { key: 'insuranceQuakeInsuranceOld', fullPath: 'deductionInputs.insurance.quakeOld' },
+  { key: 'insuranceQuakeInsuranceNew', fullPath: 'deductionInputs.insurance.quakeNew' },
+  { key: 'medicalExpenses', fullPath: 'deductionInputs.medical.expenses' },
+  { key: 'housingLoan', fullPath: 'deductionInputs.housing.loans' },
+  { key: 'housingImprovementHouse', fullPath: 'deductionInputs.housing.improvement' },
+  { key: 'donationsHometownTax', fullPath: 'deductionInputs.donations.hometownTax' },
+  { key: 'donationsCommunityChest', fullPath: 'deductionInputs.donations.communityChest' },
+  { key: 'donationsDonationByPref', fullPath: 'deductionInputs.donations.pref' },
+  { key: 'donationsDonationByCity', fullPath: 'deductionInputs.donations.city' },
+  { key: 'donationsDonationOther', fullPath: 'deductionInputs.donations.other' },
+  { key: 'donationsContributions', fullPath: 'deductionInputs.donations.politics' },
+  { key: 'withholdingSalary', fullPath: 'deductionInputs.withholding.salary' },
+  { key: 'withholdingStockS', fullPath: 'deductionInputs.withholding.stockS' },
+  { key: 'withholdingStockJ', fullPath: 'deductionInputs.withholding.stockJ' },
+  { key: 'withholdingDividendS', fullPath: 'deductionInputs.withholding.dividendS' },
+  { key: 'withholdingDividendJ', fullPath: 'deductionInputs.withholding.dividendJ' },
+  { key: 'withholdingNonResidents', fullPath: 'deductionInputs.withholding.nonResidents' },
+  { key: 'otherDividend', fullPath: 'deductionInputs.other.dividend' },
+  { key: 'otherUnlistedStocks', fullPath: 'deductionInputs.other.unlistedStocks' },
+  { key: 'otherForeignTax', fullPath: 'deductionInputs.other.foreignTax' },
 ];
 const taxReturnMappings: MappingEntry[] = [
   { key: 'donationsApplyOneStop', fullPath: 'taxReturn.applyOneStop' },
@@ -352,22 +353,33 @@ export function getTaxYear() {
   return;
 }
 
-export function getProfile() {
+export function getProfiles() {
   getHtmlElements(profileElements);
 }
 
-export function setProfile() {
+export function setProfiles() {
   return setHtmlElements(profileElements);
 }
 
-export function getDeductionInput() {
+export function getDeductionInputs() {
   getHtmlElements(deductionInputElements);
   getHtmlElements(taxReturnElements);
   //console.log('deductionInput:', deductionInput);
 }
 
-export function setDeductionInput() {
+export function setDeductionInputs() {
   return setHtmlElements(deductionInputElements);
+}
+
+export function getCarryovers() {
+  carryOvers.loss = deductionInputs.loss.casualtyLoss;
+}
+
+export function getInputs() {
+  getTaxYear();
+  getProfiles();
+  getDeductionInputs();
+  getCarryovers();
 }
 
 export function showTax() {

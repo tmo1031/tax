@@ -1,31 +1,32 @@
-import { profile, system } from './objects.js';
+import { profiles, system, carryOvers } from './objects.js';
+import { Currency, Profiles } from './objects.js';
 import { roundBy, sumTaxable } from './functions.js';
 
-interface TaxValue {
+type TaxValue = {
   year: number;
   max10Per: number;
   max5Per: number;
-}
+};
 
-interface MaxTable {
+type MaxTable = {
   fortyPer: number;
   thirtyPer: number;
   twentyPer: number;
   tenPer: number;
   fivePer: number;
   zeroPer: number;
-}
+};
 
-interface Threshold {
+type Threshold = {
   limit: number;
   discountRate: number;
-}
+};
 
-interface TaxRateResult {
+type TaxRateResult = {
   rate: number;
   deduction: number;
   offset: number;
-}
+};
 
 function calcTaxable(taxYear: number, income: number): number {
   function getValuesForYear(values: TaxValue[], year: number, keys: (keyof TaxValue)[]): Partial<TaxValue> {
@@ -113,10 +114,53 @@ function calcTaxable(taxYear: number, income: number): number {
   return Math.max(taxable - incomeTaxSystem.offset, 0);
 }
 
+function getCarryover(taxable: number, carryOvers: Record<string, Currency>): number {
+  function sumCarryovers(carryOvers: Record<string, Currency>): number {
+    return Object.values(carryOvers).reduce((sum, currency) => sum + currency.amount, 0);
+  }
+  const carryOversSum = sumCarryovers(carryOvers);
+  return Math.max(taxable - carryOversSum, 0);
+}
+
+function setNonTaxable(profiles: Profiles, system: Record<string, number>): Profiles {
+  const taxYear = system.taxYear;
+  const taxableTotal = profiles.applicant.taxable.total.amount;
+  const carryOver = profiles.applicant.taxable.carryOver.amount;
+  const nonTaxableAttr =
+    profiles.applicant.attributes.disability > 0 ||
+    profiles.applicant.attributes.minors ||
+    profiles.applicant.attributes.single > 0;
+  const familyMembersNum =
+    1 +
+    (profiles.applicant.attributes.hasSpouse ? 1 : 0) +
+    Object.values(profiles.dependent).reduce((sum, value) => sum + value, 0);
+  function getNonTaxableAmount(taxYear: number, members: number): Record<string, number> {
+    const nonTaxableTable =
+      taxYear < 1999
+        ? { rate: 350000, baseFixed: 210000, baseVar: 320000, adjustment: 0 }
+        : taxYear < 2020
+          ? { rate: 350000, baseFixed: 210000, baseVar: 320000, adjustment: 0 }
+          : { rate: 350000, baseFixed: 210000, baseVar: 320000, adjustment: 100000 };
+    const nonTaxableFixed =
+      members > 1 ? nonTaxableTable.baseFixed : 0 + nonTaxableTable.rate * members + nonTaxableTable.adjustment;
+    const nonTaxableVar =
+      members > 1 ? nonTaxableTable.baseVar : 0 + nonTaxableTable.rate * members + nonTaxableTable.adjustment;
+    return { nonTaxableFixed: nonTaxableFixed, nonTaxableVar: nonTaxableVar };
+  }
+  const threshold = getNonTaxableAmount(taxYear, familyMembersNum);
+  const nonTaxableFinal = nonTaxableAttr && taxableTotal <= 1350000;
+  const nonTaxableFixed = taxableTotal <= threshold.nonTaxableFixed;
+  const nonTaxableVar = carryOver <= threshold.nonTaxableVar;
+  profiles.nonTaxable = { var: nonTaxableVar, fixed: nonTaxableFixed, final: nonTaxableFinal };
+  return profiles;
+}
+
 export function setTaxable() {
   console.log('setTaxable');
-  profile.applicant.taxable.salary.amount = calcTaxable(system.taxYear, profile.applicant.income.salary.amount);
-  profile.applicant.taxable.total = sumTaxable(profile.applicant.taxable);
-  profile.spouse.taxable.salary.amount = calcTaxable(system.taxYear, profile.spouse.income.salary.amount);
-  profile.spouse.taxable.total = sumTaxable(profile.spouse.taxable);
+  profiles.applicant.taxable.salary.amount = calcTaxable(system.taxYear, profiles.applicant.income.salary.amount);
+  profiles.applicant.taxable.total = sumTaxable(profiles.applicant.taxable);
+  profiles.applicant.taxable.carryOver.amount = getCarryover(profiles.applicant.taxable.total.amount, carryOvers);
+  profiles.spouse.taxable.salary.amount = calcTaxable(system.taxYear, profiles.spouse.income.salary.amount);
+  profiles.spouse.taxable.total = sumTaxable(profiles.spouse.taxable);
+  setNonTaxable(profiles, system);
 }
