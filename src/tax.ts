@@ -6,10 +6,12 @@ import {
   taxCredits,
   paid,
   tax,
+  taxReturn,
   system,
   Currency,
 } from './objects.js';
 import {
+  getTaxAdjustment,
   getDividendCredit,
   getLoansCreditPre,
   getLoansCredit,
@@ -20,7 +22,7 @@ import {
   getDividendRefund,
   getStockRefund,
 } from './taxCredits.js';
-import { getTaxRate } from './taxSystem.js';
+import { getTaxRate, getIncomeTaxRate } from './taxSystem.js';
 import { sumCurrency, subtractCurrency, multiplyCurrency, roundCurrency } from './functions.js';
 
 export function calcTax() {
@@ -85,11 +87,34 @@ export function calcTax() {
     tax.taxPreAlt.residentTax = sumCurrency(tax.taxPre.cityTax, tax.taxPre.prefTax);
   }
     */
+  function calcTaxAdjusted() {
+    console.log('calcAdjusted');
+    console.log('personalDeductions:', personalDeductions);
+    console.log('profiles.applicant.taxable.total.amount:', profiles.applicant.taxable.total.amount);
+    console.log('tax.taxable.residentTax.amount:', tax.taxable.residentTax.amount);
+    const taxAdjustment = getTaxAdjustment(
+      personalDeductions,
+      profiles.applicant.taxable.total.amount,
+      tax.taxable.residentTax.amount
+    );
+    taxCredits.adjust = taxAdjustment.adjustment;
+    taxSystem.delta = taxAdjustment.delta;
+    console.log('taxAdjustment:', taxAdjustment);
+    tax.taxAdjusted = calcTaxDetails(tax.taxPre, taxAdjustment.adjustment, subtractCurrency);
+    console.log('tax.taxAdjusted:', tax.taxAdjusted);
+  }
 
   function getTaxCredits() {
-    taxCredits.Dividend = getDividendCredit(taxYear); // 配当控除の計算が難しいので保留
+    const taxable = tax.taxable.incomeTax.amount;
+    const taxableEstimated = Math.max(tax.taxable.residentTax.amount - taxSystem.delta, 0);
+    const taxRate = getIncomeTaxRate(taxYear, taxable).incomeTaxRate;
+    const taxRateEstimated = getIncomeTaxRate(taxYear, taxableEstimated).incomeTaxRate;
+    console.log('taxable:', taxable, taxableEstimated);
+    console.log('taxRate:', taxRate, taxRateEstimated);
+
+    taxCredits.dividend = getDividendCredit(taxYear); // 配当控除の計算が難しいので保留
     const loanCredit = getLoansCreditPre(profiles.estate, profiles.applicant.taxable.total.amount);
-    taxCredits.Loans = getLoansCredit(
+    taxCredits.loans = getLoansCredit(
       taxYear,
       profiles.estate,
       profiles.applicant.taxable.total.amount,
@@ -98,36 +123,62 @@ export function calcTax() {
       tax.taxPreAlt.incomeTax.amount
     );
     // 住宅取得と増改築の併用は保留
-    taxCredits.Donations = getDonationCredit(taxYear, deductionInputs.donations);
-    taxCredits.ImprovementHouse = getImprovementCredit(taxYear, deductionInputs.housing.improvement.amount);
-    taxCredits.DisasterReduction = getDisasterCredit(taxYear, deductionInputs.loss.disasterReduction.amount);
-    taxCredits.ForeignTax = getForeignTaxCredit(taxYear, deductionInputs.other.foreignTax.amount);
-    taxCredits.Withholding_Dividend = getDividendRefund(taxYear, deductionInputs.withholding.dividendJ.amount);
-    taxCredits.Withholding_Stock = getStockRefund(taxYear, deductionInputs.withholding.stockJ.amount);
+    taxCredits.donations = getDonationCredit(
+      taxYear,
+      deductionInputs.donations,
+      taxReturn,
+      profiles.applicant.taxable.carryOver.amount, //総所得金額等
+      tax.taxAdjusted, //個人住民税所得割額（調整控除額控除後の額）
+      taxRateEstimated
+    );
+    taxCredits.improvementHouse = getImprovementCredit(taxYear, deductionInputs.housing.improvement.amount);
+    taxCredits.disasterReduction = getDisasterCredit(taxYear, deductionInputs.loss.disasterReduction.amount);
+    taxCredits.foreignTax = getForeignTaxCredit(taxYear, deductionInputs.other.foreignTax.amount);
+    taxCredits.withholdingDividendCredit = getDividendRefund(taxYear, deductionInputs.withholding.dividendJ.amount);
+    taxCredits.withholdingStockCredit = getStockRefund(taxYear, deductionInputs.withholding.stockJ.amount);
     console.log('taxCredits:', taxCredits);
   }
 
   function calcTaxCredit() {
     console.log('calcTaxCredit');
     tax.taxCredit.incomeTax = sumCurrency(
-      taxCredits.Dividend.incomeTax,
-      taxCredits.Loans.incomeTax,
-      taxCredits.Donations.incomeTax,
-      taxCredits.ImprovementHouse.incomeTax,
-      taxCredits.DisasterReduction.incomeTax,
-      taxCredits.ForeignTax.incomeTax
+      taxCredits.dividend.incomeTax,
+      taxCredits.loans.incomeTax,
+      taxCredits.donations.incomeTax,
+      taxCredits.improvementHouse.incomeTax,
+      taxCredits.disasterReduction.incomeTax,
+      taxCredits.foreignTax.incomeTax
     );
+    /*
     tax.taxCredit.residentTax = sumCurrency(
-      taxCredits.Dividend.residentTax,
-      taxCredits.Loans.residentTax,
-      taxCredits.Donations.residentTax,
-      taxCredits.ForeignTax.residentTax,
-      taxCredits.Withholding_Dividend.residentTax,
-      taxCredits.Withholding_Stock.residentTax
+      taxCredits.adjust.residentTax,
+      taxCredits.dividend.residentTax,
+      taxCredits.loans.residentTax,
+      taxCredits.donations.residentTax,
+      taxCredits.foreignTax.residentTax,
+      taxCredits.withholdingDividendCredit.residentTax,
+      taxCredits.withholdingStockCredit.residentTax
     );
-
-    tax.taxCredit.cityTax = multiplyCurrency(tax.taxCredit.residentTax, taxSystem.rate.cityRatio);
-    tax.taxCredit.prefTax = multiplyCurrency(tax.taxCredit.residentTax, 1 - taxSystem.rate.cityRatio);
+    */
+    tax.taxCredit.cityTax = sumCurrency(
+      taxCredits.adjust.cityTax,
+      taxCredits.dividend.cityTax,
+      taxCredits.loans.cityTax,
+      taxCredits.donations.cityTax,
+      taxCredits.foreignTax.cityTax,
+      taxCredits.withholdingDividendCredit.cityTax,
+      taxCredits.withholdingStockCredit.cityTax
+    );
+    tax.taxCredit.prefTax = sumCurrency(
+      taxCredits.adjust.prefTax,
+      taxCredits.dividend.prefTax,
+      taxCredits.loans.prefTax,
+      taxCredits.donations.prefTax,
+      taxCredits.foreignTax.prefTax,
+      taxCredits.withholdingDividendCredit.prefTax,
+      taxCredits.withholdingStockCredit.prefTax
+    );
+    tax.taxCredit.residentTax = sumCurrency(tax.taxCredit.cityTax, tax.taxCredit.prefTax);
   }
   /*
   interface ExtendedTaxDetails {
@@ -163,6 +214,10 @@ export function calcTax() {
       tax.taxVar.ecoTax = { amount: 0 };
       tax.taxVar.residentTax = { amount: 0 };
     }
+    tax.taxVar.incomeTax = roundCurrency(tax.taxVar.incomeTax, 100);
+    tax.taxVar.cityTax = roundCurrency(tax.taxVar.cityTax, 100);
+    tax.taxVar.prefTax = roundCurrency(tax.taxVar.prefTax, 100);
+    tax.taxVar.residentTax = sumCurrency(tax.taxVar.cityTax, tax.taxVar.prefTax);
   }
   function calcTaxFixed() {
     console.log('calcTaxFixed');
@@ -193,6 +248,7 @@ export function calcTax() {
   const taxSystem = getTaxRate(taxYear, tax.taxable.incomeTax.amount, tax.taxable.residentTax.amount);
   console.log('taxSystem:', taxSystem);
   calcTaxPre();
+  calcTaxAdjusted();
   getTaxCredits();
   calcTaxCredit();
   calcTaxVar();
@@ -204,5 +260,6 @@ export function calcTax() {
 
 export function setTax() {
   calcTax();
+  console.log('tax:', tax);
   return;
 }

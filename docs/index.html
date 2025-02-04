@@ -406,24 +406,32 @@
         <br />
         <label>⚫︎保険料</label>
         <table id="insuranceTable">
-          <thead id="insuranceHead">
+          <thead id="insuranceHead1">
             <tr>
               <th class="currency">新生命保険</th>
               <th class="currency">旧生命保険</th>
               <th class="currency">介護医療保険</th>
               <th class="currency">新個人年金</th>
               <th class="currency">旧個人年金</th>
-              <th class="currency">旧長期損保</th>
-              <th class="currency">地震保険</th>
             </tr>
           </thead>
-          <tbody id="insuranceBody">
+          <tbody id="insuranceBody1">
             <tr>
               <td><input id="insuranceLifeNew" type="text" class="just-num currency-input" value="0" /></td>
               <td><input id="insuranceLifeOld" type="text" class="just-num currency-input" value="0" /></td>
               <td><input id="insuranceHealth" type="text" class="just-num currency-input" value="0" /></td>
               <td><input id="insuranceAnnuityNew" type="text" class="just-num currency-input" value="0" /></td>
               <td><input id="insuranceAnnuityOld" type="text" class="just-num currency-input" value="0" /></td>
+            </tr>
+            <thead id="insuranceHead2">
+              <tr>
+                <th class="currency">旧長期損保</th>
+                <th class="currency">地震保険</th>
+              </tr>
+            </thead>
+          </tbody>
+          <tbody id="insuranceBody2">
+            <tr>
               <td><input id="insuranceQuakeInsuranceOld" type="text" class="just-num currency-input" value="0" /></td>
               <td><input id="insuranceQuakeInsuranceNew" type="text" class="just-num currency-input" value="0" /></td>
             </tr>
@@ -453,24 +461,36 @@
         <br />
         <label>⚫︎寄附金</label>
         <table id="donationsTable">
-          <thead id="donationsHead">
+          <thead id="donationsHead1">
             <tr>
-              <th class="currency">ふるさと納税額</th>
-              <th class="currency">共同募金/日赤等</th>
-              <th class="currency">都道府県条例指定</th>
-              <th class="currency">市区町村条例指定</th>
-              <th class="currency">その他機関</th>
+              <th class="currency">ふるさと納税</th>
               <th class="currency">政党等</th>
+              <th class="currency">認定NPO</th>
+              <th class="currency">公益社団</th>
+              <th class="currency">その他機関計</th>
             </tr>
           </thead>
-          <tbody id="donationsBody">
+          <tbody id="donationsBody1">
             <tr>
               <td><input id="donationsHometownTax" type="text" class="just-num currency-input" value="0" /></td>
-              <td><input id="donationsCommunityChest" type="text" class="just-num currency-input" value="0" /></td>
-              <td><input id="donationsDonationByPref" type="text" class="just-num currency-input" value="0" /></td>
-              <td><input id="donationsDonationByCity" type="text" class="just-num currency-input" value="0" /></td>
-              <td><input id="donationsDonationOther" type="text" class="just-num currency-input" value="0" /></td>
               <td><input id="donationsContributions" type="text" class="just-num currency-input" value="0" /></td>
+              <td><input id="donationsNPO" type="text" class="just-num currency-input" value="0" /></td>
+              <td><input id="donationsPublic" type="text" class="just-num currency-input" value="0" /></td>
+              <td><input id="donationsOther" type="text" class="just-num currency-input" value="0" /></td>
+            </tr>
+            <thead id="donationsHead2">
+              <tr>
+                <th class="currency">共同募金/日赤等</th>
+                <th class="currency">都道府県条例指定</th>
+                <th class="currency">市区町村条例指定</th>
+              </tr>
+            </thead>
+          </tbody>
+          <tbody id="donationsBody2">
+            <tr>
+              <td><input id="donationsCommunityChest" type="text" class="just-num currency-input" value="0" /></td>
+              <td><input id="donationsByPref" type="text" class="just-num currency-input" value="0" /></td>
+              <td><input id="donationsByCity" type="text" class="just-num currency-input" value="0" /></td>
             </tr>
           </tbody>
         </table>
@@ -621,6 +641,11 @@
           </thead>
           <tbody id="taxCreditsBody">
             <tr>
+              <td>調整控除</td>
+              <td></td>
+              <td><label id="adjustJ" class="currency-input">0</label></td>
+            </tr>
+            <tr>
               <td>配当控除</td>
               <td><label id="dividendS" class="currency-input">0</label></td>
               <td><label id="dividendJ" class="currency-input">0</label></td>
@@ -752,10 +777,6 @@
       <li>以下の控除計算は未実装です。</li>
       <ul>
         <li>住宅借入金等</li>
-        <li>寄附金</li>
-        <li>寄附金税額控除</li>
-        <li>政党等寄附金等</li>
-        <li>雑損</li>
         <li>配当控除</li>
         <li>住宅耐震改修特別控除</li>
         <li>災害減免</li>

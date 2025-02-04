@@ -4,6 +4,10 @@ export function roundBy(income: number, base: number): number {
   return Math.floor(income / base) * base;
 }
 
+export function ceilBy(income: number, base: number): number {
+  return Math.ceil(income / base) * base;
+}
+
 export function roundCurrency(income: Currency, base: number): Currency {
   return { amount: roundBy(income.amount, base) };
 }

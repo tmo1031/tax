@@ -164,42 +164,42 @@ export function getSpouseDeduction(
 export function getDependentDeduction(taxYear: number, dependent: Record<string, number>) {
   console.log('getDependentDeductions');
   const deductionTypes = [
-    'Specified',
-    'Elderly_LT',
-    'Elderly',
-    'Child',
-    'Other',
-    'Disability_LT',
-    'Disability_P',
-    'Disability_O',
+    'specified',
+    'elderlyLt',
+    'elderly',
+    'child',
+    'other',
+    'disabilityLt',
+    'disabilityP',
+    'disabilityO',
   ];
   const deductionTable: { [key: string]: { incomeTax: number; residentTax: number } } =
     taxYear < 1999
       ? {
           // 平成11年分から特定扶養親族の控除が拡大
-          Specified: { incomeTax: NaN, residentTax: NaN },
+          specified: { incomeTax: NaN, residentTax: NaN },
         }
       : taxYear < 2011
         ? {
             // 平成23年分から年少扶養親族（～15歳）に対する扶養控除が廃止
-            Specified: { incomeTax: 630000, residentTax: 450000 }, // 特定扶養親族(16～22歳)
-            Elderly_LT: { incomeTax: 580000, residentTax: 450000 },
-            Elderly: { incomeTax: 480000, residentTax: 380000 },
-            Child: { incomeTax: 380000, residentTax: 330000 },
-            Other: { incomeTax: 380000, residentTax: 330000 },
-            Disability_LT: { incomeTax: 750000, residentTax: 530000 },
-            Disability_P: { incomeTax: 400000, residentTax: 300000 },
-            Disability_O: { incomeTax: 270000, residentTax: 260000 },
+            specified: { incomeTax: 630000, residentTax: 450000 }, // 特定扶養親族(16～22歳)
+            elderlyLt: { incomeTax: 580000, residentTax: 450000 },
+            elderly: { incomeTax: 480000, residentTax: 380000 },
+            child: { incomeTax: 380000, residentTax: 330000 },
+            other: { incomeTax: 380000, residentTax: 330000 },
+            disabilityLt: { incomeTax: 750000, residentTax: 530000 },
+            disabilityP: { incomeTax: 400000, residentTax: 300000 },
+            disabilityO: { incomeTax: 270000, residentTax: 260000 },
           }
         : {
-            Specified: { incomeTax: 630000, residentTax: 450000 }, // 特定扶養親族(19～22歳)
-            Elderly_LT: { incomeTax: 580000, residentTax: 450000 },
-            Elderly: { incomeTax: 480000, residentTax: 380000 },
-            Child: { incomeTax: 0, residentTax: 0 },
-            Other: { incomeTax: 380000, residentTax: 330000 },
-            Disability_LT: { incomeTax: 750000, residentTax: 530000 },
-            Disability_P: { incomeTax: 400000, residentTax: 300000 },
-            Disability_O: { incomeTax: 270000, residentTax: 260000 },
+            specified: { incomeTax: 630000, residentTax: 450000 }, // 特定扶養親族(19～22歳)
+            elderlyLt: { incomeTax: 580000, residentTax: 450000 },
+            elderly: { incomeTax: 480000, residentTax: 380000 },
+            child: { incomeTax: 0, residentTax: 0 },
+            other: { incomeTax: 380000, residentTax: 330000 },
+            disabilityLt: { incomeTax: 750000, residentTax: 530000 },
+            disabilityP: { incomeTax: 400000, residentTax: 300000 },
+            disabilityO: { incomeTax: 270000, residentTax: 260000 },
           };
 
   function sumDeductions(
@@ -413,20 +413,20 @@ export function getQuakeInsuranceDeduction(taxYear: number, insurance: Record<st
 
 export function getDonationDeduction(
   taxYear: number,
-  Donations: Record<string, number>,
+  donations: Record<string, number>,
   taxReturn: TaxReturn,
   taxableTotal: number
 ) {
-  function sumDonations(Donations: Record<string, number>) {
+  function sumDonations(donations: Record<string, number>, taxReturn: TaxReturn): number {
     let sum = 0;
-    for (const key in Donations) {
-      const element = Donations[key];
-      sum += element;
-    }
+    sum += taxReturn.applyOneStop ? 0 : donations.hometownTax;
+    sum += taxReturn.applyPolitics ? 0 : donations.politics + donations.npo + donations.public;
+    sum += donations.other;
     return sum;
   }
-  Math.min(taxableTotal * 0.4, sumDonations(Donations));
-  return { incomeTax: 0, residentTax: 0 };
+  const limit = taxableTotal * 0.4;
+  const deduction = Math.max(Math.min(limit, sumDonations(donations, taxReturn)) - 2000, 0);
+  return { incomeTax: deduction, residentTax: 0 };
 }
 
 /* ここから集計処理 */
@@ -517,4 +517,6 @@ export function setIncomeDeductions(incomeDeductions: Record<string, Record<stri
 export function setDeductions() {
   setPersonalDeductions(personalDeductions);
   setIncomeDeductions(incomeDeductions);
+  console.log('personalDeductions:', personalDeductions);
+  console.log('incomeDeductions:', incomeDeductions);
 }

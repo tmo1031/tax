@@ -1,5 +1,4 @@
-export function getTaxRate(taxYear: number, taxableIncome: number, taxableResident: number) {
-  const paymentYear = taxYear + 1;
+export function getIncomeTaxRate(taxYear: number, taxableIncome: number) {
   const reconstructionTax = taxYear >= 2013 && taxYear <= 2037 ? 1.021 : 1; //復興所得税
   const incomeTaxRateTable =
     taxYear < 1999
@@ -32,6 +31,17 @@ export function getTaxRate(taxYear: number, taxableIncome: number, taxableReside
               { limit: 40000000, rate: 0.4, adjustment: 2796000 },
               { limit: Infinity, rate: 0.45, adjustment: 4796000 },
             ];
+
+  for (const bracket of incomeTaxRateTable) {
+    if (taxableIncome <= bracket.limit) {
+      return { incomeTaxRate: bracket.rate * reconstructionTax, incomeTaxAdjustment: bracket.adjustment };
+    }
+  }
+  return { incomeTaxRate: NaN, incomeTaxAdjustment: NaN };
+}
+
+export function getTaxRate(taxYear: number, taxableIncome: number, taxableResident: number) {
+  const paymentYear = taxYear + 1;
   const residentTaxRateTable =
     paymentYear < 1999
       ? [
@@ -130,14 +140,6 @@ export function getTaxRate(taxYear: number, taxableIncome: number, taxableReside
   //公的年金等控除
   //65歳以上の方に対する非課税措置
 */
-  function getIncomeTaxRate(taxable: number): { incomeTaxRate: number; incomeTaxAdjustment: number } {
-    for (const bracket of incomeTaxRateTable) {
-      if (taxable <= bracket.limit) {
-        return { incomeTaxRate: bracket.rate * reconstructionTax, incomeTaxAdjustment: bracket.adjustment };
-      }
-    }
-    return { incomeTaxRate: NaN, incomeTaxAdjustment: NaN };
-  }
 
   function getResidentTaxRate(taxable: number): {
     taxRateCity: number;
@@ -159,7 +161,7 @@ export function getTaxRate(taxYear: number, taxableIncome: number, taxableReside
   }
 
   //console.log('taxableIncome:', taxableIncome);
-  const { incomeTaxRate, incomeTaxAdjustment } = getIncomeTaxRate(taxableIncome);
+  const { incomeTaxRate, incomeTaxAdjustment } = getIncomeTaxRate(taxYear, taxableIncome);
   const { taxRateCity, taxRatePref, residentTaxAdjustment } = getResidentTaxRate(taxableResident);
   const { cityTax, prefTax, ecoTax } = getFixedTax();
   const residentTaxRate = taxRateCity + taxRatePref;
@@ -175,6 +177,7 @@ export function getTaxRate(taxYear: number, taxableIncome: number, taxableReside
     },
     adjustment: { incomeTax: { amount: incomeTaxAdjustment }, residentTax: { amount: residentTaxAdjustment } },
     fixed: { cityTax: { amount: cityTax }, prefTax: { amount: prefTax }, ecoTax: { amount: ecoTax } },
+    delta: 0,
   };
 
   return taxSystem;

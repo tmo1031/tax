@@ -6,6 +6,7 @@ export type TaxSystem = {
   rate: Record<string, number>;
   adjustment: Record<string, Currency>;
   fixed: Record<string, Currency>;
+  delta: number;
 };
 
 export type Profiles = {
@@ -246,6 +247,8 @@ export const deductionInputs: Record<string, Record<string, Currency>> = {
     city: { amount: 0 },
     other: { amount: 0 },
     politics: { amount: 0 },
+    npo: { amount: 0 },
+    public: { amount: 0 },
   },
   withholding: {
     salary: { amount: 0 },
@@ -285,6 +288,7 @@ export const incomeDeductions: Record<string, Record<string, Currency>> = {
 };
 
 export const taxCredits: Record<string, Record<string, Currency>> = {
+  adjust: createTaxDetails(),
   dividend: createTaxDetails(),
   loans: createTaxDetails(),
   donations: createTaxDetails(), // 政党等寄附金等は寄付金控除とマージ
@@ -306,6 +310,7 @@ export const tax: Record<string, Record<string, Currency>> = {
   taxable: createExtendedTaxDetails(),
   taxPre: createExtendedTaxDetails(),
   taxPreAlt: createExtendedTaxDetails(),
+  taxAdjusted: createExtendedTaxDetails(),
   taxCredit: createExtendedTaxDetails(),
   taxVar: createExtendedTaxDetails(),
   taxFixed: createExtendedTaxDetails(),
