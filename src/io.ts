@@ -176,7 +176,7 @@ const taxCreditsMappings: MappingEntry[] = [
   { key: 'disasterReductionS', fullPath: 'taxCredits.disasterReduction.incomeTax' },
   { key: 'foreignTaxS', fullPath: 'taxCredits.foreignTax.incomeTax' },
   { key: 'foreignTaxJ', fullPath: 'taxCredits.foreignTax.residentTax' },
-  { key: 'withholdingDividendCreditJ', fullPath: 'taxCredits.withholdingDividendCredit.incomeTax' },
+  { key: 'withholdingDividendCreditJ', fullPath: 'taxCredits.withholdingDividendCredit.residentTax' },
   { key: 'withholdingStockCreditJ', fullPath: 'taxCredits.withholdingStockCredit.residentTax' },
 ];
 const taxMappings: MappingEntry[] = [

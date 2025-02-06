@@ -25,14 +25,6 @@ import {
 import { getTaxRate, getIncomeTaxRate } from './taxSystem.js';
 import { sumCurrency, subtractCurrency, multiplyCurrency, roundCurrency } from './functions.js';
 
-export function setPaid() {
-  console.log('setPaid');
-  paid.withholdings.incomeTax = { amount: 0 };
-  paid.withholdings.residentTax = { amount: 0 };
-  paid.nonResidents.incomeTax = { amount: 0 };
-  paid.nonResidents.residentTax = { amount: 0 };
-}
-
 export function calcTax() {
   console.log('calcTax');
   const taxYear = system.taxYear;
@@ -133,6 +125,8 @@ export function calcTax() {
     const taxableEstimated = Math.max(tax.taxable.residentTax.amount - taxSystem.delta, 0);
     const taxRate = getIncomeTaxRate(taxYear, taxable).incomeTaxRate;
     const taxRateEstimated = getIncomeTaxRate(taxYear, taxableEstimated).incomeTaxRate;
+    const cityRatio = taxSystem.rate.cityRatio;
+
     console.log('taxable:', taxable, taxableEstimated);
     console.log('taxRate:', taxRate, taxRateEstimated);
 
@@ -158,10 +152,22 @@ export function calcTax() {
     );
     taxCredits.improvementHouse = getImprovementCredit(taxYear, deductionInputs.housing.improvement.amount);
     taxCredits.disasterReduction = getDisasterCredit(taxYear, deductionInputs.loss.disasterReduction.amount);
-    taxCredits.foreignTax = getForeignTaxCredit(taxYear, deductionInputs.other.foreignTax.amount);
-    taxCredits.withholdingDividendCredit = getDividendRefund(taxYear, deductionInputs.withholding.dividendJ.amount);
-    taxCredits.withholdingStockCredit = getStockRefund(taxYear, deductionInputs.withholding.stockJ.amount);
+    taxCredits.foreignTax = getForeignTaxCredit(deductionInputs.other.foreignTax.amount, cityRatio);
+    taxCredits.withholdingDividendCredit = getDividendRefund(deductionInputs.withholding.dividendJ.amount, cityRatio);
+    taxCredits.withholdingStockCredit = getStockRefund(deductionInputs.withholding.stockJ.amount, cityRatio);
     console.log('taxCredits:', taxCredits);
+  }
+
+  function getPaid() {
+    console.log('getPaid');
+    paid.withholdings.incomeTax = sumCurrency(
+      deductionInputs.withholding.salary,
+      deductionInputs.withholding.stockS,
+      deductionInputs.withholding.dividendS
+    );
+    paid.withholdings.residentTax = { amount: 0 };
+    paid.nonResidents.incomeTax = { amount: 0 };
+    paid.nonResidents.residentTax = deductionInputs.withholding.nonResidents;
   }
 
   function calcTaxCredit() {
@@ -238,6 +244,7 @@ export function calcTax() {
   function calcTaxFixed() {
     console.log('calcTaxFixed');
     const nonTaxable = profiles.nonTaxable.final || profiles.nonTaxable.fixed;
+    tax.taxFixed.incomeTax = roundCurrency(multiplyCurrency(tax.taxVar.incomeTax, taxSystem.additionalRate - 1), 1);
     tax.taxFixed.cityTax = nonTaxable ? { amount: 0 } : taxSystem.fixed.cityTax;
     tax.taxFixed.prefTax = nonTaxable ? { amount: 0 } : taxSystem.fixed.prefTax;
     tax.taxFixed.ecoTax = nonTaxable ? { amount: 0 } : taxSystem.fixed.ecoTax;
@@ -246,7 +253,6 @@ export function calcTax() {
   function calcTaxFinal() {
     console.log('calcTaxFinal');
     tax.taxFinal = calcTaxDetails(tax.taxVar, tax.taxFixed, sumCurrency);
-    tax.taxFinal.incomeTax = roundCurrency(multiplyCurrency(tax.taxFinal.incomeTax, taxSystem.additionalRate), 100);
   }
 
   function calcPaid() {
@@ -256,7 +262,9 @@ export function calcTax() {
   }
   function calcRefund() {
     console.log('calcRefund');
-    tax.refund = calcTaxDetails(tax.taxFinal, tax.paid, subtractCurrency);
+    const refundIncomeTax = { amount: tax.taxFinal.incomeTax.amount - tax.paid.incomeTax.amount };
+    tax.refund.incomeTax = roundCurrency(refundIncomeTax, 10);
+    tax.refund.residentTax.amount = tax.taxFinal.residentTax.amount - tax.paid.residentTax.amount;
   }
 
   calcIncomeTax();
@@ -272,12 +280,12 @@ export function calcTax() {
   calcTaxVar();
   calcTaxFixed();
   calcTaxFinal();
+  getPaid();
   calcPaid();
   calcRefund();
 }
 
 export function setTax() {
-  setPaid();
   calcTax();
   console.log('tax:', tax);
   return;

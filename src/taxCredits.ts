@@ -1,7 +1,7 @@
 import { roundBy, ceilBy, subtractCurrency /*, sumCurrency*/ } from './functions.js';
 import { Estate, Currency, TaxReturn } from './objects.js';
 
-export function getTaxAdjustment(
+export function getTaxAdjustment( // 調整控除
   personalDeductions: Record<string, Record<string, Currency>>,
   taxable: number,
   taxableDeducted: number
@@ -422,27 +422,28 @@ export function getDisasterCredit(taxYear: number, disaster: number) {
   console.log('disaster', disaster);
   return { incomeTax: { amount: 0 }, residentTax: { amount: 0 }, cityTax: { amount: 0 }, prefTax: { amount: 0 } };
 }
-export function getForeignTaxCredit(taxYear: number, foreignTax: number) {
-  console.log('getForeignTaxCredit');
-  console.log('taxYear', taxYear);
-  console.log('foreignTax', foreignTax);
-  return { incomeTax: { amount: 0 }, residentTax: { amount: 0 }, cityTax: { amount: 0 }, prefTax: { amount: 0 } };
+export function getForeignTaxCredit(foreignTax: number, cityRatio: number) {
+  //外国税額控除(未実装)
+  return {
+    incomeTax: { amount: 0 },
+    residentTax: { amount: foreignTax },
+    cityTax: { amount: foreignTax * cityRatio },
+    prefTax: { amount: foreignTax * (1 - cityRatio) },
+  };
 }
-export function getDividendRefund(taxYear: number, dividend: number) {
-  console.log('getDividendRefund');
-  console.log('taxYear', taxYear);
-  console.log('dividend', dividend);
-  return { incomeTax: { amount: 0 }, residentTax: { amount: 0 }, cityTax: { amount: 0 }, prefTax: { amount: 0 } };
+export function getDividendRefund(dividend: number, cityRatio: number) {
+  return {
+    incomeTax: { amount: 0 },
+    residentTax: { amount: dividend },
+    cityTax: { amount: Math.floor(dividend * cityRatio) },
+    prefTax: { amount: Math.ceil(dividend * (1 - cityRatio)) },
+  };
 }
-export function getStockRefund(taxYear: number, stock: number) {
-  console.log('getStockRefund');
-  console.log('taxYear', taxYear);
-  console.log('stock', stock);
-  return { incomeTax: { amount: 0 }, residentTax: { amount: 0 }, cityTax: { amount: 0 }, prefTax: { amount: 0 } };
-}
-export function getPaid(paid: Record<string, Currency>) {
-  console.log('getPaid');
-  console.log('paid', paid);
-
-  return { incomeTax: { amount: 0 }, residentTax: { amount: 0 }, cityTax: { amount: 0 }, prefTax: { amount: 0 } };
+export function getStockRefund(stock: number, cityRatio: number) {
+  return {
+    incomeTax: { amount: 0 },
+    residentTax: { amount: stock },
+    cityTax: { amount: Math.floor(stock * cityRatio) },
+    prefTax: { amount: Math.ceil(stock * (1 - cityRatio)) },
+  };
 }
