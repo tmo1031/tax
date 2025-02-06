@@ -25,6 +25,14 @@ import {
 import { getTaxRate, getIncomeTaxRate } from './taxSystem.js';
 import { sumCurrency, subtractCurrency, multiplyCurrency, roundCurrency } from './functions.js';
 
+export function setPaid() {
+  console.log('setPaid');
+  paid.withholdings.incomeTax = { amount: 0 };
+  paid.withholdings.residentTax = { amount: 0 };
+  paid.nonResidents.incomeTax = { amount: 0 };
+  paid.nonResidents.residentTax = { amount: 0 };
+}
+
 export function calcTax() {
   console.log('calcTax');
   const taxYear = system.taxYear;
@@ -69,12 +77,28 @@ export function calcTax() {
     tax.taxable.incomeTax = roundCurrency(subtractCurrency(tax.income.incomeTax, tax.deduction.incomeTax), 1000);
     tax.taxable.residentTax = roundCurrency(subtractCurrency(tax.income.residentTax, tax.deduction.residentTax), 1000);
   }
+
   function calcTaxPre() {
     console.log('calcTaxPre');
     const nonTaxable = profiles.nonTaxable.final;
-    tax.taxPre.incomeTax = roundCurrency(multiplyCurrency(tax.taxable.incomeTax, taxSystem.rate.incomeTax), 100);
-    tax.taxPre.cityTax = nonTaxable ? { amount: 0 } : multiplyCurrency(tax.taxable.residentTax, taxSystem.rate.cityTax);
-    tax.taxPre.prefTax = nonTaxable ? { amount: 0 } : multiplyCurrency(tax.taxable.residentTax, taxSystem.rate.prefTax);
+    console.log('incomeTax:', tax.taxable.incomeTax.amount);
+    console.log('incomeTaxRate:', taxSystem.rate.incomeTax);
+    console.log('incomeTaxAdjustment:', taxSystem.adjustment.incomeTax);
+    const incomeTaxPre = subtractCurrency(
+      multiplyCurrency(tax.taxable.incomeTax, taxSystem.rate.incomeTax),
+      taxSystem.adjustment.incomeTax
+    );
+    const cityTaxPre = subtractCurrency(
+      multiplyCurrency(tax.taxable.residentTax, taxSystem.rate.cityTax),
+      taxSystem.adjustment.cityTax
+    );
+    const prefTaxPre = subtractCurrency(
+      multiplyCurrency(tax.taxable.residentTax, taxSystem.rate.prefTax),
+      taxSystem.adjustment.prefTax
+    );
+    tax.taxPre.incomeTax = roundCurrency(incomeTaxPre, 100);
+    tax.taxPre.cityTax = nonTaxable ? { amount: 0 } : cityTaxPre;
+    tax.taxPre.prefTax = nonTaxable ? { amount: 0 } : prefTaxPre;
     tax.taxPre.residentTax = sumCurrency(tax.taxPre.cityTax, tax.taxPre.prefTax);
   }
   /*
@@ -114,6 +138,7 @@ export function calcTax() {
 
     taxCredits.dividend = getDividendCredit(taxYear); // 配当控除の計算が難しいので保留
     const loanCredit = getLoansCreditPre(profiles.estate, profiles.applicant.taxable.total.amount);
+    console.log('loanCredit:', loanCredit);
     taxCredits.loans = getLoansCredit(
       taxYear,
       profiles.estate,
@@ -180,15 +205,6 @@ export function calcTax() {
     );
     tax.taxCredit.residentTax = sumCurrency(tax.taxCredit.cityTax, tax.taxCredit.prefTax);
   }
-  /*
-  interface ExtendedTaxDetails {
-    [key: string]: Currency;
-  }
-
-  interface TaxDetails {
-    [key: string]: Currency;
-  }
-  */
 
   function calcTaxDetails(
     operand1: Record<string, Currency>,
@@ -230,7 +246,9 @@ export function calcTax() {
   function calcTaxFinal() {
     console.log('calcTaxFinal');
     tax.taxFinal = calcTaxDetails(tax.taxVar, tax.taxFixed, sumCurrency);
+    tax.taxFinal.incomeTax = roundCurrency(multiplyCurrency(tax.taxFinal.incomeTax, taxSystem.additionalRate), 100);
   }
+
   function calcPaid() {
     console.log('calcPaid');
     tax.paid.incomeTax = sumCurrency(paid.withholdings.incomeTax, paid.nonResidents.incomeTax);
@@ -259,6 +277,7 @@ export function calcTax() {
 }
 
 export function setTax() {
+  setPaid();
   calcTax();
   console.log('tax:', tax);
   return;

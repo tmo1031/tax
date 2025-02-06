@@ -34,10 +34,14 @@ export function getIncomeTaxRate(taxYear: number, taxableIncome: number) {
 
   for (const bracket of incomeTaxRateTable) {
     if (taxableIncome <= bracket.limit) {
-      return { incomeTaxRate: bracket.rate * reconstructionTax, incomeTaxAdjustment: bracket.adjustment };
+      return {
+        incomeTaxRate: bracket.rate,
+        additionalRate: reconstructionTax,
+        incomeTaxAdjustment: bracket.adjustment,
+      };
     }
   }
-  return { incomeTaxRate: NaN, incomeTaxAdjustment: NaN };
+  return { incomeTaxRate: NaN, additionalRate: NaN, incomeTaxAdjustment: NaN };
 }
 
 export function getTaxRate(taxYear: number, taxableIncome: number, taxableResident: number) {
@@ -161,7 +165,7 @@ export function getTaxRate(taxYear: number, taxableIncome: number, taxableReside
   }
 
   //console.log('taxableIncome:', taxableIncome);
-  const { incomeTaxRate, incomeTaxAdjustment } = getIncomeTaxRate(taxYear, taxableIncome);
+  const { incomeTaxRate, additionalRate, incomeTaxAdjustment } = getIncomeTaxRate(taxYear, taxableIncome);
   const { taxRateCity, taxRatePref, residentTaxAdjustment } = getResidentTaxRate(taxableResident);
   const { cityTax, prefTax, ecoTax } = getFixedTax();
   const residentTaxRate = taxRateCity + taxRatePref;
@@ -175,9 +179,15 @@ export function getTaxRate(taxYear: number, taxableIncome: number, taxableReside
       prefTax: taxRatePref,
       cityRatio: cityRatio,
     },
-    adjustment: { incomeTax: { amount: incomeTaxAdjustment }, residentTax: { amount: residentTaxAdjustment } },
+    adjustment: {
+      incomeTax: { amount: incomeTaxAdjustment },
+      residentTax: { amount: residentTaxAdjustment },
+      cityTax: { amount: residentTaxAdjustment * cityRatio },
+      prefTax: { amount: residentTaxAdjustment * (1 - cityRatio) },
+    },
     fixed: { cityTax: { amount: cityTax }, prefTax: { amount: prefTax }, ecoTax: { amount: ecoTax } },
     delta: 0,
+    additionalRate: additionalRate,
   };
 
   return taxSystem;
