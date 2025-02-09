@@ -56,8 +56,8 @@ function calcTaxable(taxYear: number, income: number): { total: number; taxable:
       fortyPer: 1800000,
       thirtyPer: 3600000,
       twentyPer: 6600000,
-      tenPer: values.max10Per ?? 0,
-      fivePer: values.max5Per ?? 0,
+      tenPer: values.max10Per ?? Infinity,
+      fivePer: values.max5Per ?? Infinity,
       zeroPer: Infinity,
     };
 
@@ -70,7 +70,7 @@ function calcTaxable(taxYear: number, income: number): { total: number; taxable:
       { limit: maxTable.zeroPer, discountRate: 0 },
     ];
 
-    if (maxTable.fivePer !== null) {
+    if (maxTable.fivePer !== Infinity) {
       thresholds.splice(5, 0, { limit: maxTable.fivePer, discountRate: 0.05 });
     }
 
@@ -274,17 +274,16 @@ function getSalaryAdjustment(
   pensionTaxable: number,
   disability: number,
   minors: number
-): number {
-  let adjustment = 0;
-  if (taxYear < 2020) return 0;
-  if (disability > 0 || minors > 0) adjustment = Math.max(Math.min(salaryRevenue, 10000000) - 8500000, 0) * 0.1;
-  if (salaryTaxable > 0 && pensionTaxable > 0) {
-    const salaryTaxableAdjusted = salaryTaxable - adjustment;
-    const adjustmentSalary = Math.min(100000, salaryTaxableAdjusted);
-    const adjustmentPension = Math.min(100000, pensionTaxable);
-    adjustment = Math.max(0, adjustmentSalary + adjustmentPension - 100000);
-  }
-  return adjustment;
+): { dependent: number; doubleIncome: number } {
+  if (taxYear < 2020) return { dependent: 0, doubleIncome: 0 };
+  const adjustmentDependent =
+    disability > 0 || minors > 0 ? Math.max(Math.min(salaryRevenue, 10000000) - 8500000, 0) * 0.1 : 0;
+  const salaryTaxableAdjusted = salaryTaxable - adjustmentDependent;
+  const adjustmentSalary = Math.min(100000, salaryTaxableAdjusted);
+  const adjustmentPension = Math.min(100000, pensionTaxable);
+  const adjustmentDoubleIncome =
+    salaryTaxable > 0 && pensionTaxable > 0 ? Math.max(0, adjustmentSalary + adjustmentPension - 100000) : 0;
+  return { dependent: adjustmentDependent, doubleIncome: adjustmentDoubleIncome };
 }
 
 function aggregationPL(mode: string, detail: Record<string, Record<string, Currency>>) {
@@ -349,6 +348,7 @@ function setNonTaxable(profiles: Profiles, system: Record<string, number>): Prof
 export function setTaxable() {
   console.log('setTaxable');
   const applicantSalary = calcTaxable(system.taxYear, profiles.applicant.income.salary.amount);
+  console.log('applicantSalary:', applicantSalary);
   const spouseSalary = calcTaxable(system.taxYear, profiles.spouse.income.salary.amount);
 
   //以前の機能との互換性
@@ -394,6 +394,22 @@ export function setTaxable() {
     });
   }
 
+  //所得金額調整控除の計算(1回目)
+  const salaryAdjustment1 = getSalaryAdjustment(
+    system.taxYear,
+    profiles.detail.salary.revenue.amount,
+    applicantSalary.taxable - salaryExpensesSp,
+    0,
+    (profiles.applicant.attributes.disability >= 2 ? 1 : 0) +
+      (profiles.spouse.attributes.disability >= 2 ? 1 : 0) +
+      profiles.dependent.disabilityP +
+      profiles.dependent.disabilityLt,
+    profiles.dependent.minors + profiles.dependent.specified
+  );
+  console.log('salaryAdjustment:', salaryAdjustment1);
+  profiles.detail.salary.expenses.amount = applicantSalary.deduction + salaryExpensesSp + salaryAdjustment1.dependent;
+  profiles.detail.salary.income.amount = profiles.detail.salary.revenue.amount - profiles.detail.salary.expenses.amount;
+
   //公的年金等に係る雑所得以外の所得金額の計算
   const exceptPension = aggregationPL('exceptPension', profiles.detail);
   console.log('exceptPension:', exceptPension);
@@ -408,8 +424,8 @@ export function setTaxable() {
   profiles.detail.pension.expenses.amount = pension.deduction;
   profiles.detail.pension.income.amount = pension.taxable;
 
-  //所得金額調整控除の計算
-  const salaryAdjustment = getSalaryAdjustment(
+  //所得金額調整控除の計算(2回目)
+  const salaryAdjustment2 = getSalaryAdjustment(
     system.taxYear,
     profiles.detail.salary.revenue.amount,
     applicantSalary.taxable - salaryExpensesSp,
@@ -420,6 +436,8 @@ export function setTaxable() {
       profiles.dependent.disabilityLt,
     profiles.dependent.minors + profiles.dependent.specified
   );
-  console.log('salaryAdjustment:', salaryAdjustment);
-  profiles.detail.salary.expenses.amount = applicantSalary.deduction + salaryExpensesSp + salaryAdjustment;
+  console.log('salaryAdjustment:', salaryAdjustment2);
+  profiles.detail.salary.expenses.amount =
+    applicantSalary.deduction + salaryExpensesSp + salaryAdjustment2.dependent + salaryAdjustment2.doubleIncome;
+  profiles.detail.salary.income.amount = profiles.detail.salary.revenue.amount - profiles.detail.salary.expenses.amount;
 }
