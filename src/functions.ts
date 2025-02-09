@@ -37,7 +37,7 @@ export function CurrencyToString(value: Currency): string {
 }
 
 export function sumTaxable(taxable: Record<string, Currency>): Currency {
-  return sumCurrency(taxable.salary, taxable.misc, taxable.other);
+  return sumCurrency(taxable.salary, taxable.other);
 }
 
 export function sumCurrency(...currencies: Currency[]): Currency {

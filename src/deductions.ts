@@ -249,6 +249,11 @@ export function getBasicDeduction(taxYear: number, taxable: number) {
   return BasicDeductionTable[level];
 }
 
+export function getElderlyDeduction(taxYear: number, taxable: number, age: number) {
+  if (taxYear < 2005 && taxable <= 10000000 && age >= 65) return { incomeTax: 500000, residentTax: 480000 };
+  else return { incomeTax: 0, residentTax: 0 };
+}
+
 export function getCasualtyLoss(taxYear: number, loss: number) {
   //繰越などがあるので、あらかじめ計算した控除額を入力する
   return { incomeTax: loss, residentTax: loss };
@@ -444,6 +449,7 @@ export function setPersonalDeductions(personalDeductions: Record<string, Record<
     const attributes = profiles.applicant.attributes;
     const dependent = profiles.dependent;
     const spouse = profiles.spouse.taxable;
+    const applicantAge = profiles.applicant.age;
     const spouseAge = profiles.spouse.age;
     const hasSpouse = profiles.applicant.attributes.hasSpouse;
 
@@ -453,6 +459,7 @@ export function setPersonalDeductions(personalDeductions: Record<string, Record<
       student: getStudentDeduction(taxYear, attributes.student === true ? 1 : 0, taxable),
       spouse: getSpouseDeduction(taxYear, hasSpouse, taxable.total.amount, spouse.total.amount, spouseAge),
       dependent: getDependentDeduction(taxYear, dependent),
+      elderly: getElderlyDeduction(taxYear, taxable.total.amount, applicantAge),
       basic: getBasicDeduction(taxYear, taxable.total.amount),
       personal: { incomeTax: 0, residentTax: 0 },
     };

@@ -11,7 +11,6 @@ import {
 } from './objects.js';
 import { Currency } from './objects.js';
 import { CurrencyToString } from './functions.js';
-//import { get } from 'jquery';
 
 type Value = number | string | boolean | Currency | null;
 
@@ -67,6 +66,7 @@ const profileMappings: MappingEntry[] = [
   { key: 'dependentElderly', fullPath: 'profiles.dependent.elderly' },
   { key: 'dependentChild', fullPath: 'profiles.dependent.child' },
   { key: 'dependentOther', fullPath: 'profiles.dependent.other' },
+  { key: 'dependentMinors', fullPath: 'profiles.dependent.minors' },
   { key: 'dependentDisabilityLt', fullPath: 'profiles.dependent.disabilityLt' },
   { key: 'dependentDisabilityP', fullPath: 'profiles.dependent.disabilityP' },
   { key: 'dependentDisabilityO', fullPath: 'profiles.dependent.disabilityO' },
@@ -98,6 +98,98 @@ const profileMappings: MappingEntry[] = [
   { key: 'estateCaseParenting', fullPath: 'profiles.estate.case.parenting' },
   { key: 'estateCaseSpR6', fullPath: 'profiles.estate.case.spR6' },
 ];
+const incomeInputMappings: MappingEntry[] = [
+  { key: 'businessRevenue', fullPath: 'profiles.detail.business.revenue' },
+  { key: 'businessExpenses', fullPath: 'profiles.detail.business.expenses' },
+  { key: 'businessDeductions', fullPath: 'profiles.detail.business.deductions' },
+  { key: 'businessIncome', fullPath: 'profiles.detail.business.income' },
+  { key: 'farmingRevenue', fullPath: 'profiles.detail.farming.revenue' },
+  { key: 'farmingExpenses', fullPath: 'profiles.detail.farming.expenses' },
+  { key: 'farmingDeductions', fullPath: 'profiles.detail.farming.deductions' },
+  { key: 'farmingIncome', fullPath: 'profiles.detail.farming.income' },
+  { key: 'propertyRevenue', fullPath: 'profiles.detail.property.revenue' },
+  { key: 'propertyExpenses', fullPath: 'profiles.detail.property.expenses' },
+  { key: 'propertyDeductions', fullPath: 'profiles.detail.property.deductions' },
+  { key: 'propertyIncome', fullPath: 'profiles.detail.property.income' },
+  { key: 'interestRevenue', fullPath: 'profiles.detail.interest.revenue' },
+  { key: 'interestExpenses', fullPath: 'profiles.detail.interest.expenses' },
+  { key: 'interestDeductions', fullPath: 'profiles.detail.interest.deductions' },
+  { key: 'interestIncome', fullPath: 'profiles.detail.interest.income' },
+  { key: 'dividendRevenue', fullPath: 'profiles.detail.dividend.revenue' },
+  { key: 'dividendExpenses', fullPath: 'profiles.detail.dividend.expenses' },
+  { key: 'dividendDeductions', fullPath: 'profiles.detail.dividend.deductions' },
+  { key: 'dividendIncome', fullPath: 'profiles.detail.dividend.income' },
+  { key: 'salaryRevenue', fullPath: 'profiles.detail.salary.revenue' },
+  { key: 'salaryExpenses', fullPath: 'profiles.detail.salary.expenses' },
+  { key: 'salaryDeductions', fullPath: 'profiles.detail.salary.deductions' },
+  { key: 'salaryIncome', fullPath: 'profiles.detail.salary.income' },
+  { key: 'pensionRevenue', fullPath: 'profiles.detail.pension.revenue' },
+  { key: 'pensionExpenses', fullPath: 'profiles.detail.pension.expenses' },
+  { key: 'pensionDeductions', fullPath: 'profiles.detail.pension.deductions' },
+  { key: 'pensionIncome', fullPath: 'profiles.detail.pension.income' },
+  { key: 'miscRevenue', fullPath: 'profiles.detail.misc.revenue' },
+  { key: 'miscExpenses', fullPath: 'profiles.detail.misc.expenses' },
+  { key: 'miscDeductions', fullPath: 'profiles.detail.misc.deductions' },
+  { key: 'miscIncome', fullPath: 'profiles.detail.misc.income' },
+  { key: 'shortSeparateRevenue', fullPath: 'profiles.detail.shortSeparate.revenue' },
+  { key: 'shortSeparateExpenses', fullPath: 'profiles.detail.shortSeparate.expenses' },
+  { key: 'shortSeparateDeductions', fullPath: 'profiles.detail.shortSeparate.deductions' },
+  { key: 'shortSeparateIncome', fullPath: 'profiles.detail.shortSeparate.income' },
+  { key: 'shortAggregateRevenue', fullPath: 'profiles.detail.shortAggregate.revenue' },
+  { key: 'shortAggregateExpenses', fullPath: 'profiles.detail.shortAggregate.expenses' },
+  { key: 'shortAggregateDeductions', fullPath: 'profiles.detail.shortAggregate.deductions' },
+  { key: 'shortAggregateIncome', fullPath: 'profiles.detail.shortAggregate.income' },
+  { key: 'longSeparateRevenue', fullPath: 'profiles.detail.longSeparate.revenue' },
+  { key: 'longSeparateExpenses', fullPath: 'profiles.detail.longSeparate.expenses' },
+  { key: 'longSeparateDeductions', fullPath: 'profiles.detail.longSeparate.deductions' },
+  { key: 'longSeparateIncome', fullPath: 'profiles.detail.longSeparate.income' },
+  { key: 'longAggregateRevenue', fullPath: 'profiles.detail.longAggregate.revenue' },
+  { key: 'longAggregateExpenses', fullPath: 'profiles.detail.longAggregate.expenses' },
+  { key: 'longAggregateDeductions', fullPath: 'profiles.detail.longAggregate.deductions' },
+  { key: 'longAggregateIncome', fullPath: 'profiles.detail.longAggregate.income' },
+  { key: 'occasionalRevenue', fullPath: 'profiles.detail.occasional.revenue' },
+  { key: 'occasionalExpenses', fullPath: 'profiles.detail.occasional.expenses' },
+  { key: 'occasionalDeductions', fullPath: 'profiles.detail.occasional.deductions' },
+  { key: 'occasionalIncome', fullPath: 'profiles.detail.occasional.income' },
+  { key: 'timberRevenue', fullPath: 'profiles.detail.timber.revenue' },
+  { key: 'timberExpenses', fullPath: 'profiles.detail.timber.expenses' },
+  { key: 'timberDeductions', fullPath: 'profiles.detail.timber.deductions' },
+  { key: 'timberIncome', fullPath: 'profiles.detail.timber.income' },
+  { key: 'retirementLongRevenue', fullPath: 'profiles.detail.retirementLong.revenue' },
+  { key: 'retirementLongExpenses', fullPath: 'profiles.detail.retirementLong.expenses' },
+  { key: 'retirementLongDeductions', fullPath: 'profiles.detail.retirementLong.deductions' },
+  { key: 'retirementLongIncome', fullPath: 'profiles.detail.retirementLong.income' },
+  { key: 'retirementShortRevenue', fullPath: 'profiles.detail.retirementShort.revenue' },
+  { key: 'retirementShortExpenses', fullPath: 'profiles.detail.retirementShort.expenses' },
+  { key: 'retirementShortDeductions', fullPath: 'profiles.detail.retirementShort.deductions' },
+  { key: 'retirementShortIncome', fullPath: 'profiles.detail.retirementShort.income' },
+  { key: 'retirementOfficerRevenue', fullPath: 'profiles.detail.retirementOfficer.revenue' },
+  { key: 'retirementOfficerExpenses', fullPath: 'profiles.detail.retirementOfficer.expenses' },
+  {
+    key: 'retirementOfficerDeductions',
+    fullPath: 'profiles.detail.retirementOfficer.deductions',
+  },
+  { key: 'retirementOfficerIncome', fullPath: 'profiles.detail.retirementOfficer.income' },
+  { key: 'stockUnlistedRevenue', fullPath: 'profiles.detail.stockUnlisted.revenue' },
+  { key: 'stockUnlistedExpenses', fullPath: 'profiles.detail.stockUnlisted.expenses' },
+  { key: 'stockUnlistedDeductions', fullPath: 'profiles.detail.stockUnlisted.deductions' },
+  { key: 'stockUnlistedIncome', fullPath: 'profiles.detail.stockUnlisted.income' },
+  { key: 'stockGainsRevenue', fullPath: 'profiles.detail.stockGains.revenue' },
+  { key: 'stockGainsExpenses', fullPath: 'profiles.detail.stockGains.expenses' },
+  { key: 'stockGainsDeductions', fullPath: 'profiles.detail.stockGains.deductions' },
+  { key: 'stockGainsIncome', fullPath: 'profiles.detail.stockGains.income' },
+  { key: 'stockDividendRevenue', fullPath: 'profiles.detail.stockDividend.revenue' },
+  { key: 'stockDividendExpenses', fullPath: 'profiles.detail.stockDividend.expenses' },
+  { key: 'stockDividendDeductions', fullPath: 'profiles.detail.stockDividend.deductions' },
+  { key: 'stockDividendIncome', fullPath: 'profiles.detail.stockDividend.income' },
+  { key: 'futureRevenue', fullPath: 'profiles.detail.future.revenue' },
+  { key: 'futureExpenses', fullPath: 'profiles.detail.future.expenses' },
+  { key: 'futureDeductions', fullPath: 'profiles.detail.future.deductions' },
+  { key: 'futureIncome', fullPath: 'profiles.detail.future.income' },
+  { key: 'salaryExpensesSp', fullPath: 'profiles.other.salaryExpensesSp' },
+  { key: 'serviceYears', fullPath: 'profiles.other.serviceYears' },
+];
+
 const deductionInputMappings: MappingEntry[] = [
   { key: 'lossCasualtyLoss', fullPath: 'deductionInputs.loss.casualtyLoss' },
   { key: 'lossDisasterReduction', fullPath: 'deductionInputs.loss.disasterReduction' },
@@ -145,6 +237,8 @@ const personalDeductionsMappings: MappingEntry[] = [
   { key: 'spouseJ', fullPath: 'personalDeductions.spouse.residentTax' },
   { key: 'dependentS', fullPath: 'personalDeductions.dependent.incomeTax' },
   { key: 'dependentJ', fullPath: 'personalDeductions.dependent.residentTax' },
+  { key: 'elderlyS', fullPath: 'personalDeductions.elderly.incomeTax' },
+  { key: 'elderlyJ', fullPath: 'personalDeductions.elderly.residentTax' },
   { key: 'basicS', fullPath: 'personalDeductions.basic.incomeTax' },
   { key: 'basicJ', fullPath: 'personalDeductions.basic.residentTax' },
 ];
@@ -248,6 +342,7 @@ function createMapping(mappings: MappingEntry[]): { [key: string]: (value: Value
 }
 
 const profileMapping = createMapping(profileMappings);
+const incomeInputMapping = createMapping(incomeInputMappings);
 const deductionInputMapping = createMapping(deductionInputMappings);
 const taxReturnMapping = createMapping(taxReturnMappings);
 const personalDeductionsMapping = createMapping(personalDeductionsMappings);
@@ -277,6 +372,7 @@ function createHtmlElements(mapping: Mapping): HtmlElements {
 }
 
 const profileElements: HtmlElements = createHtmlElements(profileMapping);
+const incomeInputElements: HtmlElements = createHtmlElements(incomeInputMapping);
 const deductionInputElements: HtmlElements = createHtmlElements(deductionInputMapping);
 const taxReturnElements: HtmlElements = createHtmlElements(taxReturnMapping);
 const incomeDeductionsElements: HtmlElements = createHtmlElements(incomeDeductionsMapping);
@@ -360,8 +456,15 @@ export function getProfiles() {
   getHtmlElements(profileElements);
 }
 
+export function getIncome() {
+  getHtmlElements(incomeInputElements);
+  console.log('inputs:', incomeInputElements);
+  console.log('profilesInputs:', profiles);
+}
+
 export function setProfiles() {
-  return setHtmlElements(profileElements);
+  setHtmlElements(profileElements);
+  setHtmlElements(incomeInputElements);
 }
 
 export function getDeductionInputs() {
@@ -381,6 +484,7 @@ export function getCarryovers() {
 export function getInputs() {
   getTaxYear();
   getProfiles();
+  getIncome();
   getDeductionInputs();
   getCarryovers();
 }

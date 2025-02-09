@@ -34,8 +34,8 @@ export function handleYearChange() {
   const taxYearElement = document.getElementById('taxYear') as HTMLInputElement | null;
   const birthYearElement = document.getElementById('applicantBirthYear') as HTMLInputElement | null;
   const birthYearSElement = document.getElementById('spouseBirthYear') as HTMLInputElement | null;
-  const moveInYearElement = document.getElementById('moveInYear') as HTMLInputElement | null;
-  const renovYearElement = document.getElementById('renovYear') as HTMLInputElement | null;
+  const moveInYearElement = document.getElementById('estateHouseYear') as HTMLInputElement | null;
+  const renovYearElement = document.getElementById('estateRenovationYear') as HTMLInputElement | null;
   const minorsElement = document.getElementById('applicantAttributesMinors') as HTMLInputElement | null;
   const applyResidentTaxDivElement = document.getElementById('applyResidentTaxDiv') as HTMLDivElement | null;
   const spH19DivElement = document.getElementById('spH19Div') as HTMLDivElement | null;
@@ -144,12 +144,52 @@ export function handleDependentChange() {
   // 扶養家族の有無によって寡婦の有効化を切り替える
 }
 
+export function handleSalaryChange(id: string) {
+  // 給与収入を入力する2つの欄を連動させる
+  const salaryElement = document.getElementById('applicantIncomeSalary') as HTMLInputElement | null;
+  const salaryRevenueElement = document.getElementById('salaryRevenue') as HTMLInputElement | null;
+  if (salaryElement && salaryRevenueElement) {
+    if (id === 'applicantIncomeSalary') {
+      salaryRevenueElement.value = salaryElement.value;
+    }
+    if (id === 'salaryRevenue') {
+      salaryElement.value = salaryRevenueElement.value;
+    }
+  }
+}
+
+export function handleRetirementChange() {
+  //console.log(`Retirement changed: ${id}`);
+  const longRevenueElement = document.getElementById('retirementLongRevenue') as HTMLInputElement | null;
+  const shortRevenueElement = document.getElementById('retirementShortRevenue') as HTMLInputElement | null;
+  const officerRevenueElement = document.getElementById('retirementOfficerRevenue') as HTMLInputElement | null;
+  const longElement = document.getElementById('retirementLongExpenses') as HTMLInputElement | null;
+  const shortElement = document.getElementById('retirementShortExpenses') as HTMLInputElement | null;
+  const officerElement = document.getElementById('retirementOfficerExpenses') as HTMLInputElement | null;
+  const revenueCount =
+    (parseInt(longRevenueElement!.value) > 0 ? 1 : 0) +
+    (parseInt(shortRevenueElement!.value) > 0 ? 1 : 0) +
+    (parseInt(officerRevenueElement!.value) > 0 ? 1 : 0);
+  profiles.other.multiRetirement = revenueCount > 1 ? true : false;
+
+  if (profiles.other.multiRetirement) {
+    longElement!.readOnly = false;
+    shortElement!.readOnly = false;
+    officerElement!.readOnly = false;
+  } else {
+    longElement!.readOnly = true;
+    shortElement!.readOnly = true;
+    officerElement!.readOnly = true;
+  }
+  // 退職所得が複数ある場合、所得控除は手入力してもらう
+}
+
 function updateAge(age: number, profile: Profile | Contract) {
   profile.age = age;
 }
 
 const taxYearIds = ['taxYear'];
-const yearIds = ['taxYear', 'applicantBirthYear', 'spouseBirthYear', 'moveInYear', 'renovYear'];
+const yearIds = ['taxYear', 'applicantBirthYear', 'spouseBirthYear', 'estateHouseYear', 'estateRenovationYear'];
 const hasSpouseIds = ['applicantSpouse'];
 const loanSelectIDs = ['LoanSelect'];
 const incomeIds = ['incomeSalary', 'taxableOther'];
@@ -159,13 +199,25 @@ const dependentIds = [
   'dependentElderly',
   'dependentChild',
   'dependentOther',
+  'dependentMinors',
   'dependentDisabilityLT',
   'dependentDisabilityP',
   'dependentDisabilityO',
 ];
+const salaryIds = ['applicantIncomeSalary', 'salaryRevenue'];
+const retirementIds = ['retirementLongRevenue', 'retirementShortRevenue', 'retirementOfficerRevenue'];
 
 export function allSpecialEvents() {
-  const allIds = [...taxYearIds, ...yearIds, ...hasSpouseIds, ...loanSelectIDs, ...incomeIds, ...dependentIds];
+  const allIds = [
+    ...taxYearIds,
+    ...yearIds,
+    ...hasSpouseIds,
+    ...loanSelectIDs,
+    ...incomeIds,
+    ...dependentIds,
+    ...salaryIds,
+    ...retirementIds,
+  ];
   allIds.forEach((id) => {
     specialEvents(id);
   });
@@ -190,5 +242,11 @@ export function specialEvents(id: string) {
   }
   if (dependentIds.includes(id)) {
     handleDependentChange();
+  }
+  if (salaryIds.includes(id)) {
+    handleSalaryChange(id);
+  }
+  if (retirementIds.includes(id)) {
+    handleRetirementChange();
   }
 }

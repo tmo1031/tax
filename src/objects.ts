@@ -15,6 +15,7 @@ export type Profiles = {
   dependent: Dependent;
   estate: Estate;
   nonTaxable: Record<string, boolean>;
+  other: { salaryExpensesSp: Currency; serviceYears: number };
 };
 
 type Attributes = {
@@ -79,20 +80,7 @@ const createObject = <T>(template: T): T => ({ ...template });
 
 const createIncome = () =>
   createObject({
-    interest: { amount: 0 },
-    dividend: { amount: 0 },
-    realProperty: { amount: 0 },
-    business: { amount: 0 },
     salary: { amount: 0 },
-    misc: { amount: 0 },
-    occasional: { amount: 0 },
-    capitalGains: { amount: 0 },
-    capitalGainsEstate: { amount: 0 },
-    dividendStock: { amount: 0 },
-    capitalGainsStock: { amount: 0 },
-    futures: { amount: 0 },
-    timber: { amount: 0 },
-    retirement: { amount: 0 },
     other: { amount: 0 },
     total: { amount: 0 },
     carryOver: { amount: 0 },
@@ -123,10 +111,52 @@ const createDependent = (): Dependent =>
     elderly: 0,
     child: 0,
     other: 0,
+    minors: 0,
     disabilityLt: 0,
     disabilityP: 0,
     disabilityO: 0,
   });
+
+const createIncomeDetails = (): Record<string, Record<string, Currency>> => {
+  const template = {
+    revenue: { amount: 0 },
+    expenses: { amount: 0 },
+    deductions: { amount: 0 },
+    income: { amount: 0 },
+  };
+
+  const categories = [
+    'business',
+    'farming',
+    'property',
+    'interest',
+    'dividend',
+    'salary',
+    'pension',
+    'misc',
+    'shortSeparate',
+    'shortAggregate',
+    'longSeparate',
+    'longAggregate',
+    'occasional',
+    'timber',
+    'retirementLong',
+    'retirementShort',
+    'retirementOfficer',
+    'stockUnlisted',
+    'stockGains',
+    'stockDividend',
+    'future',
+  ];
+
+  return categories.reduce(
+    (acc, category) => {
+      acc[category] = { ...template };
+      return acc;
+    },
+    {} as Record<string, Record<string, Currency>>
+  );
+};
 
 const createContract = (): Contract =>
   createObject<Contract>({
@@ -192,12 +222,14 @@ export const profiles = {
   applicant: createProfile(),
   spouse: createProfile(),
   dependent: createDependent(),
+  detail: createIncomeDetails(),
   estate: createEstate(),
   nonTaxable: {
     var: false,
     fixed: false,
     final: false,
   },
+  other: { salaryExpensesSp: { amount: 0 }, serviceYears: 0, multiRetirement: false },
 };
 
 export const carryOvers: Record<string, Currency> = {
@@ -273,6 +305,7 @@ export const personalDeductions: Record<string, Record<string, Currency>> = {
   student: createTaxDetails(),
   spouse: createTaxDetails(),
   dependent: createTaxDetails(),
+  elderly: createTaxDetails(),
   basic: createTaxDetails(),
   personal: createTaxDetails(),
 };
