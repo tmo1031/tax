@@ -290,7 +290,7 @@ function aggregationPL(mode: string, detail: Record<string, Record<string, Curre
   let total = 0;
   Object.entries(detail).forEach(([key, value]) => {
     console.log(`Processing ${key}:`, value);
-    const keys = ['longSeparate', 'longAggregate', 'occasional', 'retirementLong', 'retirementShort'];
+    const keys = ['retirementLong', 'retirementShort'];
     const rate = keys.includes(key) ? 0.5 : 1;
 
     value.income.amount =
@@ -298,9 +298,405 @@ function aggregationPL(mode: string, detail: Record<string, Record<string, Curre
         (isNaN(value.expenses.amount) ? 0 : value.expenses.amount) -
         (isNaN(value.deductions.amount) ? 0 : value.deductions.amount)) *
       rate;
-
-    total += mode === 'exceptPension' && key === 'pension' ? 0 : value.income.amount;
   });
+  const business = detail.business.income.amount + detail.farming.income.amount;
+  const property = detail.property.income.amount;
+  const interest = detail.interest.income.amount;
+  const dividend = Math.max(detail.dividend.income.amount, 0);
+  const salary = Math.max(detail.salary.income.amount, 0);
+  const misc = Math.max(mode === 'exceptPension' ? 0 : detail.pension.income.amount + detail.misc.income.amount, 0);
+  const ordinary = business + property + interest + dividend + salary + misc;
+  //譲渡と一時所得の計算
+  const gainPL = {
+    shortSeparate: detail.shortSeparate.income.amount,
+    shortAggregate: detail.shortAggregate.income.amount,
+    longSeparate: detail.longSeparate.income.amount,
+    longAggregate: detail.longAggregate.income.amount,
+    houseLoss: 0,
+  };
+  //差引計算
+  if (
+    (gainPL.shortSeparate >= 0 &&
+      gainPL.shortAggregate >= 0 &&
+      gainPL.longSeparate >= 0 &&
+      gainPL.longAggregate >= 0) ||
+    (gainPL.shortSeparate <= 0 && gainPL.shortAggregate <= 0 && gainPL.longSeparate <= 0 && gainPL.longAggregate <= 0)
+  ) {
+    //
+  } else {
+    const separateSum = gainPL.shortSeparate + gainPL.longSeparate;
+    const aggregateSum = gainPL.shortAggregate + gainPL.longAggregate;
+    if (gainPL.shortSeparate <= 0) {
+      if (gainPL.longSeparate >= 0) {
+        //短期分離譲渡が赤字で長期分離譲渡が黒字の場合(houseLossは0)
+        gainPL.longSeparate = Math.max(separateSum, 0);
+        gainPL.shortSeparate = 0;
+      } else {
+        //短期分離譲渡と長期分離譲渡が両方赤字の場合
+        gainPL.longSeparate = Math.min(0, gainPL.houseLoss);
+        gainPL.shortSeparate = 0;
+      }
+    } else {
+      if (gainPL.longSeparate >= 0) {
+        //短期分離譲渡と長期分離譲渡が両方黒字の場合
+      } else if (separateSum >= 0) {
+        //短期分離譲渡が黒字で長期分離譲渡が赤字の場合(相殺可能)
+        gainPL.shortSeparate = separateSum;
+        gainPL.longSeparate = 0;
+      } else {
+        //短期分離譲渡が黒字で長期分離譲渡が赤字の場合(相殺不可能)
+        gainPL.shortSeparate = 0;
+        gainPL.longSeparate = Math.max(separateSum, gainPL.houseLoss);
+      }
+      gainPL.houseLoss = gainPL.longSeparate < 0 ? gainPL.longSeparate : 0;
+    }
+
+    if (gainPL.shortAggregate <= 0) {
+      if (aggregateSum >= 0) {
+        //短期総合譲渡が赤字で長期総合譲渡が黒字の場合(相殺可能)
+        gainPL.longAggregate = Math.max(aggregateSum + gainPL.houseLoss, 0);
+        gainPL.shortAggregate = 0;
+        gainPL.houseLoss = Math.min(gainPL.houseLoss + aggregateSum);
+      } else if (gainPL.longAggregate >= 0) {
+        //短期総合譲渡が赤字で長期総合譲渡の黒字が相殺しきれない場合
+        gainPL.longAggregate = 0;
+        gainPL.shortAggregate = aggregateSum;
+      } else {
+        //短期総合譲渡と長期総合譲渡が両方赤字の場合
+      }
+    } else {
+      if (gainPL.longAggregate >= 0) {
+        //短期総合譲渡と長期総合譲渡が両方黒字の場合(houseLossの相殺計算のみ)
+        const prof_loss = gainPL.shortAggregate + gainPL.houseLoss;
+        gainPL.shortAggregate = Math.max(prof_loss, 0);
+        gainPL.longAggregate =
+          gainPL.shortAggregate === 0 ? Math.max(prof_loss + gainPL.longAggregate, 0) : gainPL.longAggregate;
+        gainPL.houseLoss = Math.min(0, gainPL.houseLoss + aggregateSum);
+      } else if (aggregateSum >= 0) {
+        //短期総合譲渡が黒字で長期総合譲渡が赤字の場合(相殺可能)
+        gainPL.shortAggregate = Math.max(aggregateSum + gainPL.houseLoss, 0);
+        gainPL.longAggregate = 0;
+        gainPL.houseLoss = Math.min(0, gainPL.houseLoss + aggregateSum);
+      } else {
+        //短期総合譲渡が黒字で長期総合譲渡が赤字の場合(相殺不可能)
+        gainPL.shortAggregate = 0;
+        gainPL.longAggregate = aggregateSum;
+      }
+    }
+  }
+  const occasionalPL = Math.max(detail.occasional.income.amount, 0);
+  //特別控除の計算
+  const aggregateSumPL = gainPL.shortAggregate + gainPL.longAggregate;
+  const gainDeduction = {
+    shortSeparate: 0,
+    shortAggregate: 0,
+    longSeparate: 0,
+    longAggregate: 0,
+    houseLoss: 0,
+  };
+  const deductionLimit = 500000;
+  if (gainPL.shortAggregate >= 0) {
+    if (gainPL.longAggregate >= 0) {
+      if (aggregateSumPL <= deductionLimit) {
+        gainDeduction.shortAggregate = Math.max(gainPL.shortAggregate, 0);
+        gainDeduction.longAggregate = Math.max(gainPL.longAggregate, 0);
+      } else {
+        gainDeduction.shortAggregate = Math.min(deductionLimit, gainPL.longAggregate);
+        gainDeduction.longAggregate = Math.min(deductionLimit, deductionLimit - gainDeduction.shortAggregate);
+      }
+    } else {
+      gainDeduction.shortAggregate = Math.min(deductionLimit, gainPL.shortAggregate);
+      gainDeduction.longAggregate = 0;
+    }
+  } else {
+    if (gainPL.longAggregate >= 0) {
+      gainDeduction.shortAggregate = 0;
+      gainDeduction.longAggregate = Math.min(deductionLimit, gainPL.longAggregate);
+    } else {
+      gainDeduction.shortAggregate = 0;
+      gainDeduction.longAggregate = 0;
+    }
+  }
+  const occasionalDeduction = Math.min(deductionLimit, occasionalPL);
+  /*
+  gainPL.shortSeparate = gainPL.shortSeparate >= 0 ? Math.max(gainPL.shortSeparate, 0) : 0;
+  gainPL.shortAggregate = Math.max(gainPL.shortAggregate, 0);
+  gainPL.longSeparate = Math.max(gainPL.longSeparate, 0);
+  gainPL.longAggregate = Math.max(gainPL.longAggregate, 0);
+  */
+  //損失または所得の確定
+  const gain = {
+    shortSeparate: gainPL.shortSeparate - gainDeduction.shortSeparate,
+    shortAggregate: gainPL.shortAggregate - gainDeduction.shortAggregate,
+    longSeparate: gainPL.longSeparate - gainDeduction.longSeparate,
+    longAggregate: gainPL.longAggregate - gainDeduction.longAggregate,
+    houseLoss: gainPL.houseLoss,
+  };
+  let occasional = occasionalPL - occasionalDeduction;
+  if (
+    gainPL.shortSeparate <= 0 &&
+    gainPL.shortAggregate <= 0 &&
+    gainPL.longSeparate <= 0 &&
+    gainPL.longAggregate <= 0 &&
+    occasionalPL <= 0
+  ) {
+    gain.shortAggregate = gainPL.shortAggregate;
+    gain.longAggregate = gainPL.longAggregate;
+    gain.shortSeparate = 0;
+    gain.longSeparate = Math.min(gainPL.houseLoss, 0);
+    occasional = occasionalPL;
+  } else if (
+    gainPL.shortSeparate >= 0 &&
+    gainPL.shortAggregate >= 0 &&
+    gainPL.longSeparate >= 0 &&
+    gainPL.longAggregate >= 0 &&
+    occasionalPL >= 0
+  ) {
+    //Initialize で計算した値をそのまま使う
+  } else if (occasionalPL >= 0) {
+    const sumRed =
+      (gain.shortAggregate <= 0 ? -gain.shortAggregate : 0) +
+      (gain.longAggregate <= 0 ? -gain.longAggregate : 0) +
+      gain.houseLoss;
+    if (occasional >= sumRed) {
+      gain.shortAggregate = gainPL.shortAggregate >= 0 ? gainPL.shortAggregate : 0;
+      gain.longAggregate = gainPL.longAggregate >= 0 ? gainPL.longAggregate : 0;
+      gain.shortSeparate = gain.shortSeparate >= 0 ? gain.shortSeparate : 0;
+      gain.longSeparate = gain.longSeparate >= 0 ? gain.longSeparate : 0;
+      occasional = occasional - sumRed;
+    } else {
+      if (gainPL.shortAggregate <= 0) {
+        const delta = gainPL.shortAggregate + occasional;
+        gain.shortAggregate = delta >= 0 ? 0 : delta;
+        occasional = delta >= 0 ? delta : 0;
+      }
+      if (gainPL.longAggregate <= 0) {
+        const delta = gainPL.longAggregate + occasional;
+        gain.longAggregate = delta >= 0 ? 0 : delta;
+        occasional = delta >= 0 ? delta : 0;
+      }
+      if (gainPL.longSeparate <= 0) {
+        const delta = gainPL.houseLoss + occasional;
+        gain.longSeparate = delta >= 0 ? 0 : delta;
+        occasional = delta >= 0 ? delta : 0;
+      }
+      gain.shortSeparate = Math.max(gainPL.shortSeparate, 0);
+    }
+  }
+  //山林所得の計算
+  const timber = detail.timber.income.amount;
+  //退職所得の計算
+  const retirementLong = Math.max(Math.floor(detail.retirementLong.income.amount * 0.5), 0);
+  const retirementShort =
+    detail.retirementShort.income.amount <= 3000000
+      ? Math.max(Math.floor(detail.retirementShort.income.amount * 0.5), 0)
+      : detail.retirementShort.income.amount - 1500000;
+  const retirementOfficer = detail.retirementOfficer.income.amount;
+  const retirement = retirementLong + retirementShort + retirementOfficer;
+  const stockUnlisted = detail.stockUnlisted.income.amount;
+  const stockListed = detail.stockListed.income.amount;
+  const stockDividend = detail.stockDividend.income.amount;
+  const future = detail.future.income.amount;
+
+  //損益の通算
+  const netTable: Record<string, Record<string, number>> = {
+    pre: {
+      ordinary: ordinary,
+      shortAggregate: gain.shortAggregate,
+      longSeparate: gain.longSeparate > 0 ? 0 : gain.longSeparate,
+      longAggregate: gain.longAggregate,
+      occasional: occasional,
+      gain: gain.shortAggregate + gain.longSeparate + gain.longAggregate + occasional,
+      timber: timber,
+      retirement: retirement,
+    },
+  };
+
+  function updateNetTableFirst(
+    netTable: Record<string, Record<string, number>>,
+    key: string,
+    delta: number,
+    condition: (value: number) => boolean
+  ) {
+    if (condition(netTable.first.ordinary)) {
+      const newDelta = netTable.first.ordinary + delta;
+      netTable.first.ordinary = newDelta >= 0 ? 0 : newDelta;
+      netTable.first[key] = newDelta >= 0 ? newDelta : 0;
+    }
+  }
+
+  //第1次通算
+  if (
+    (netTable.pre.ordinary >= 0 && netTable.pre.gain >= 0) ||
+    (netTable.pre.ordinary <= 0 && netTable.pre.gain <= 0)
+  ) {
+    netTable.first = { ...netTable.pre };
+  } else if (netTable.pre.ordinary <= 0 && netTable.pre.gain >= 0) {
+    netTable.first.ordinary = netTable.pre.ordinary;
+    if (netTable.first.ordinary <= 0) {
+      const delta = netTable.first.ordinary + netTable.pre.shortAggregate;
+      netTable.first.ordinary = delta >= 0 ? 0 : delta;
+      netTable.first.shortAggregate = delta >= 0 ? delta : 0;
+    }
+    /*-- この処理は不要 
+    if (netTable.first.ordinary <= 0) {
+      const delta = netTable.first.ordinary + netTable.pre.longSeparate;
+      netTable.first.ordinary = delta >= 0 ? 0 : delta;
+      netTable.first.longSeparate = delta >= 0 ? delta : 0;
+    }
+    --*/
+    if (netTable.first.ordinary <= 0) {
+      const delta = netTable.first.ordinary + netTable.pre.longAggregate;
+      netTable.first.ordinary = delta >= 0 ? 0 : delta;
+      netTable.first.longAggregate = delta >= 0 ? delta : 0;
+    }
+    if (netTable.first.ordinary <= 0) {
+      const delta = netTable.first.ordinary + netTable.pre.occasional;
+      netTable.first.ordinary = delta >= 0 ? 0 : delta;
+      netTable.first.occasional = delta >= 0 ? delta : 0;
+    }
+  } else if (netTable.pre.ordinary >= 0 && netTable.pre.gain <= 0) {
+    netTable.first.ordinary = netTable.pre.ordinary;
+    if (netTable.first.ordinary >= 0) {
+      const delta = netTable.first.ordinary + netTable.pre.shortAggregate;
+      netTable.first.ordinary = delta <= 0 ? 0 : delta;
+      netTable.first.shortAggregate = delta <= 0 ? delta : 0;
+    }
+    if (netTable.first.ordinary >= 0) {
+      const delta = netTable.first.ordinary + netTable.pre.longSeparate;
+      netTable.first.ordinary = delta <= 0 ? 0 : delta;
+      netTable.first.longSeparate = delta <= 0 ? delta : 0;
+    }
+    if (netTable.first.ordinary >= 0) {
+      const delta = netTable.first.ordinary + netTable.pre.longAggregate;
+      netTable.first.ordinary = delta <= 0 ? 0 : delta;
+      netTable.first.longAggregate = delta <= 0 ? delta : 0;
+    }
+    if (netTable.first.ordinary >= 0) {
+      const delta = netTable.first.ordinary + netTable.pre.occasional;
+      netTable.first.ordinary = delta <= 0 ? 0 : delta;
+      netTable.first.occasional = delta <= 0 ? delta : 0;
+    }
+  }
+  netTable.first.gain =
+    netTable.first.shortAggregate +
+    netTable.first.longSeparate +
+    netTable.first.longAggregate +
+    netTable.first.occasional;
+  netTable.first.timber = netTable.pre.timber;
+  netTable.first.retirement = netTable.pre.retirement;
+  //第2次通算
+  if (
+    (netTable.first.ordinary >= 0 && netTable.first.gain >= 0 && netTable.first.timber >= 0) ||
+    (netTable.first.ordinary <= 0 && netTable.first.gain <= 0 && netTable.first.timber <= 0)
+  ) {
+    netTable.second = { ...netTable.first };
+  } else if (netTable.first.ordinary <= 0 && netTable.first.gain <= 0 && netTable.first.timber >= 0) {
+    netTable.second.timber = netTable.first.timber;
+    if (netTable.second.timber >= 0) {
+      const delta = netTable.second.timber + netTable.first.ordinary;
+      netTable.second.timber = delta <= 0 ? 0 : delta;
+      netTable.second.ordinary = delta <= 0 ? delta : 0;
+    }
+    if (netTable.second.timber >= 0) {
+      const delta = netTable.second.timber + netTable.first.shortAggregate;
+      netTable.second.timber = delta <= 0 ? 0 : delta;
+      netTable.second.shortAggregate = delta <= 0 ? delta : 0;
+    }
+    if (netTable.second.timber >= 0) {
+      const delta = netTable.second.timber + netTable.first.longSeparate;
+      netTable.second.timber = delta <= 0 ? 0 : delta;
+      netTable.second.longSeparate = delta <= 0 ? delta : 0;
+    }
+    if (netTable.second.timber >= 0) {
+      const delta = netTable.second.timber + netTable.first.longAggregate;
+      netTable.second.timber = delta <= 0 ? 0 : delta;
+      netTable.second.longAggregate = delta <= 0 ? delta : 0;
+    }
+    if (netTable.second.timber >= 0) {
+      const delta = netTable.second.timber + netTable.first.occasional;
+      netTable.second.timber = delta <= 0 ? 0 : delta;
+      netTable.second.occasional = delta <= 0 ? delta : 0;
+    }
+  } else if (netTable.first.ordinary >= 0 && netTable.first.gain >= 0 && netTable.first.timber <= 0) {
+    netTable.second.timber = netTable.first.timber;
+    if (netTable.second.timber <= 0) {
+      const delta = netTable.second.timber + netTable.first.ordinary;
+      netTable.second.timber = delta >= 0 ? 0 : delta;
+      netTable.second.ordinary = delta >= 0 ? delta : 0;
+    }
+    if (netTable.second.timber <= 0) {
+      const delta = netTable.second.timber + netTable.first.shortAggregate;
+      netTable.second.timber = delta >= 0 ? 0 : delta;
+      netTable.second.shortAggregate = delta >= 0 ? delta : 0;
+    }
+    if (netTable.second.timber <= 0) {
+      const delta = netTable.second.timber + netTable.first.longSeparate;
+      netTable.second.timber = delta >= 0 ? 0 : delta;
+      netTable.second.longSeparate = delta >= 0 ? delta : 0;
+    }
+    if (netTable.second.timber <= 0) {
+      const delta = netTable.second.timber + netTable.first.longAggregate;
+      netTable.second.timber = delta >= 0 ? 0 : delta;
+      netTable.second.longAggregate = delta >= 0 ? delta : 0;
+    }
+    if (netTable.second.timber <= 0) {
+      const delta = netTable.second.timber + netTable.first.occasional;
+      netTable.second.timber = delta >= 0 ? 0 : delta;
+      netTable.second.occasional = delta >= 0 ? delta : 0;
+    }
+  }
+  netTable.second.gain =
+    netTable.second.shortAggregate +
+    netTable.second.longSeparate +
+    netTable.second.longAggregate +
+    netTable.second.occasional;
+  netTable.second.retirement = netTable.first.retirement;
+  //第3次通算
+  if (
+    !(
+      netTable.second.ordinary <= 0 &&
+      netTable.second.gain <= 0 &&
+      netTable.second.timber <= 0 &&
+      netTable.second.retirement >= 0
+    )
+  ) {
+    netTable.third = { ...netTable.second };
+  } else {
+    //
+    netTable.third.retirement = netTable.second.retirement;
+    if (netTable.third.retirement >= 0) {
+      const delta = netTable.third.retirement + netTable.second.ordinary;
+      netTable.third.retirement = delta <= 0 ? 0 : delta;
+      netTable.third.ordinary = delta <= 0 ? delta : 0;
+    }
+    if (netTable.third.retirement >= 0) {
+      const delta = netTable.third.retirement + netTable.second.shortAggregate;
+      netTable.third.retirement = delta <= 0 ? 0 : delta;
+      netTable.third.shortAggregate = delta <= 0 ? delta : 0;
+    }
+    if (netTable.third.retirement >= 0) {
+      const delta = netTable.third.retirement + netTable.second.longSeparate;
+      netTable.third.retirement = delta <= 0 ? 0 : delta;
+      netTable.third.longSeparate = delta <= 0 ? delta : 0;
+    }
+    if (netTable.third.retirement >= 0) {
+      const delta = netTable.third.retirement + netTable.second.longAggregate;
+      netTable.third.retirement = delta <= 0 ? 0 : delta;
+      netTable.third.longAggregate = delta <= 0 ? delta : 0;
+    }
+    if (netTable.third.retirement >= 0) {
+      const delta = netTable.third.retirement + netTable.second.occasional;
+      netTable.third.retirement = delta <= 0 ? 0 : delta;
+      netTable.third.occasional = delta <= 0 ? delta : 0;
+    }
+    if (netTable.third.retirement >= 0) {
+      const delta = netTable.third.retirement + netTable.second.timber;
+      netTable.third.retirement = delta <= 0 ? 0 : delta;
+      netTable.third.timber = delta <= 0 ? delta : 0;
+    }
+  }
+
   return total;
 }
 
@@ -406,7 +802,6 @@ export function setTaxable() {
       profiles.dependent.disabilityLt,
     profiles.dependent.minors + profiles.dependent.specified
   );
-  console.log('salaryAdjustment:', salaryAdjustment1);
   profiles.detail.salary.expenses.amount = applicantSalary.deduction + salaryExpensesSp + salaryAdjustment1.dependent;
   profiles.detail.salary.income.amount = profiles.detail.salary.revenue.amount - profiles.detail.salary.expenses.amount;
 
@@ -436,7 +831,6 @@ export function setTaxable() {
       profiles.dependent.disabilityLt,
     profiles.dependent.minors + profiles.dependent.specified
   );
-  console.log('salaryAdjustment:', salaryAdjustment2);
   profiles.detail.salary.expenses.amount =
     applicantSalary.deduction + salaryExpensesSp + salaryAdjustment2.dependent + salaryAdjustment2.doubleIncome;
   profiles.detail.salary.income.amount = profiles.detail.salary.revenue.amount - profiles.detail.salary.expenses.amount;
